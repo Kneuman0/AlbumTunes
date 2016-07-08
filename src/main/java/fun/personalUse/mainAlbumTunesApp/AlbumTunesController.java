@@ -62,6 +62,8 @@ public class AlbumTunesController {
 			
 			if(currentPlayer != null){
 				currentPlayer.stop();
+				currentPlayer = null;
+				System.out.println("After stop in Start listener");
 			}
 			albumDirectoryPath = pathTextField.getText();
 			
@@ -126,7 +128,6 @@ public class AlbumTunesController {
 		player.setOnStopped(new EndOfMediaEventHandler());
 		player.setOnPaused(new PauseEventHandler());
 		player.setOnReady(new OnMediaReadyEvent(songFile));
-		player.play();
 
 		/*
 		 * The Media object takes some time to load so you sleep the thread for
