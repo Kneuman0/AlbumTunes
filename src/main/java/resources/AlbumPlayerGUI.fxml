@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fun.personalUse.mainAlbumTunesApp.AlbumTunesController">
+   <children>
+      <Button fx:id="startButton" layoutX="261.0" layoutY="285.0" mnemonicParsing="false" onAction="#startButtonListener" text="Start Album">
+         <effect>
+            <InnerShadow choke="0.4" color="WHITE" />
+         </effect></Button>
+      <TextField fx:id="pathTextField" layoutX="26.0" layoutY="140.0" onAction="#startButtonListener" prefHeight="25.0" prefWidth="548.0">
+         <effect>
+            <InnerShadow choke="0.4" color="WHITE" />
+         </effect></TextField>
+      <Label layoutX="149.0" layoutY="30.0" text="Album Player 5000">
+         <font>
+            <Font name="Broadway" size="29.0" />
+         </font>
+         <effect>
+            <DropShadow color="WHITE" spread="0.85" />
+         </effect></Label>
+      <Label layoutX="271.0" layoutY="116.0" text="Enter Path">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+         <effect>
+            <DropShadow color="WHITE" spread="0.85" />
+         </effect></Label>
+      <Label fx:id="userWarningLabel" layoutX="15.0" layoutY="209.0" prefHeight="62.0" prefWidth="571.0">
+         <font>
+            <Font size="14.0" />
+         </font>
+         <effect>
+            <DropShadow color="WHITE" spread="0.85" />
+         </effect></Label>
+      <CheckBox fx:id="shuffleBox" layoutX="510.0" layoutY="169.0" mnemonicParsing="false" selected="true" text="Shuffle?">
+         <effect>
+            <DropShadow color="WHITE" spread="0.85" />
+         </effect></CheckBox>
+      <Button fx:id="nextButton" layoutX="370.0" layoutY="174.0" mnemonicParsing="false" onAction="#nextSongButtonListener" text="Next">
+         <effect>
+            <InnerShadow choke="0.4" color="WHITE" />
+         </effect></Button>
+      <Button fx:id="pauseButton" layoutX="183.0" layoutY="174.0" mnemonicParsing="false" onAction="#pauseButtonListener" text="Pause">
+         <effect>
+            <InnerShadow choke="0.4" color="WHITE" />
+         </effect></Button>
+      <Button fx:id="resumeButton" layoutX="271.0" layoutY="174.0" mnemonicParsing="false" onAction="#resumeButtonListener" text="Resume">
+         <effect>
+            <InnerShadow choke="0.4" color="WHITE" />
+         </effect></Button>
+   </children>
+</AnchorPane>
