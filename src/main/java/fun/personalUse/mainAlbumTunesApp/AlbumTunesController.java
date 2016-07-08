@@ -60,6 +60,9 @@ public class AlbumTunesController {
 	public void startButtonListener() throws FileNotFoundException {
 		if (!albumDirectoryPath.equals(pathTextField.getText())) {
 			
+			if(currentPlayer != null){
+				currentPlayer.stop();
+			}
 			albumDirectoryPath = pathTextField.getText();
 			
 			songsInAlbum = gatherAllMediaFiles();
