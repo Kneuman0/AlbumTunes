@@ -43,6 +43,10 @@ public class AlbumTunesController {
 
 	@FXML
 	private AnchorPane anchorPane;
+	
+
+    @FXML
+    private Button restartAlbumButton;
 
 	MediaPlayer currentPlayer;
 	boolean pause;
@@ -59,24 +63,7 @@ public class AlbumTunesController {
 
 	public void startButtonListener() throws FileNotFoundException {
 		if (!albumDirectoryPath.equals(pathTextField.getText())) {
-			
-			if(currentPlayer != null){
-				currentPlayer.stop();
-				currentPlayer = null;
-				System.out.println("After stop in Start listener");
-			}
-			albumDirectoryPath = pathTextField.getText();
-			
-			songsInAlbum = gatherAllMediaFiles();
-			if (shuffleBox.isSelected()) {
-				Collections.shuffle(songsInAlbum);
-			}
-
-			try {
-				playASong(songsInAlbum.get(songNumber));
-			} catch (InterruptedException e) {
-				System.out.println("Song load interrupted during startAlbum");
-			}
+			startAlbum();
 		}
 
 	}
@@ -91,6 +78,29 @@ public class AlbumTunesController {
 
 	public void pauseButtonListener() {
 		currentPlayer.pause();
+	}
+	
+	public void restartAlbumButtonListener(){
+		songNumber = 0;
+		startAlbum();
+	}
+	
+	private void startAlbum(){
+		if(currentPlayer != null){
+			currentPlayer.stop();
+		}
+		albumDirectoryPath = pathTextField.getText();
+		
+		songsInAlbum = gatherAllMediaFiles();
+		if (shuffleBox.isSelected()) {
+			Collections.shuffle(songsInAlbum);
+		}
+
+		try {
+			playASong(songsInAlbum.get(songNumber));
+		} catch (InterruptedException e) {
+			System.out.println("Song load interrupted during startAlbum");
+		}
 	}
 
 	private ArrayList<FileBean> gatherAllMediaFiles() {
