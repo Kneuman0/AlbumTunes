@@ -60,6 +60,8 @@ public class AlbumTunesController {
 	public void startButtonListener() throws FileNotFoundException {
 		if (!albumDirectoryPath.equals(pathTextField.getText())) {
 			
+			albumDirectoryPath = pathTextField.getText();
+			
 			songsInAlbum = gatherAllMediaFiles();
 			if (shuffleBox.isSelected()) {
 				Collections.shuffle(songsInAlbum);
