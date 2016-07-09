@@ -19,6 +19,7 @@ import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
 import javafx.scene.media.Media;
+import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
 
 public class AlbumTunesController {
@@ -82,12 +83,15 @@ public class AlbumTunesController {
 	
 	public void restartAlbumButtonListener(){
 		songNumber = 0;
+		albumDirectoryPath = "";
+		songsInAlbum = null;
 		startAlbum();
 	}
 	
 	private void startAlbum(){
 		if(currentPlayer != null){
 			currentPlayer.stop();
+			currentPlayer = null;
 		}
 		albumDirectoryPath = pathTextField.getText();
 		
@@ -95,11 +99,20 @@ public class AlbumTunesController {
 		if (shuffleBox.isSelected()) {
 			Collections.shuffle(songsInAlbum);
 		}
-
-		try {
-			playASong(songsInAlbum.get(songNumber));
-		} catch (InterruptedException e) {
-			System.out.println("Song load interrupted during startAlbum");
+		
+		/*
+		 * While loop makes sure unsupported file types are skipped but does not
+		 * stop the flow of the album
+		 */
+		Object flowMaintainer = null;
+		while(flowMaintainer == null)
+			try {
+				flowMaintainer = playASong(songsInAlbum.get(songNumber));
+			} catch (MediaException e) {
+				System.out.println("Not a supported File: " + songsInAlbum.get(songNumber - 1));
+			} catch (IndexOutOfBoundsException e){
+				userWarningLabel.setText("Album Finished");
+				flowMaintainer = new Object();
 		}
 	}
 
@@ -126,29 +139,29 @@ public class AlbumTunesController {
 
 	}
 
-	private CurrentSongBean playASong(FileBean songFile)
-			throws InterruptedException {
+	private CurrentSongBean playASong(FileBean songFile) {
+		songNumber++;
+		
 		// %20 encodes spaces into the URL so that there are no illegal
 		// characters
 		// the '///' are necessary for a URL
 		Media song = new Media(String.format("file:///%s", songFile
 				.getLocation().replaceAll("\\s", "%20")));
-		MediaPlayer player = new MediaPlayer(song);
-		player.setOnEndOfMedia(new EndOfMediaEventHandler());
-		player.setOnStopped(new EndOfMediaEventHandler());
-		player.setOnPaused(new PauseEventHandler());
-		player.setOnReady(new OnMediaReadyEvent(songFile));
-
+		currentPlayer = new MediaPlayer(song);
+		currentPlayer.setOnEndOfMedia(new EndOfMediaEventHandler());
+		currentPlayer.setOnStopped(new EndOfMediaEventHandler());
+		currentPlayer.setOnPaused(new PauseEventHandler());
+		
 		/*
-		 * The Media object takes some time to load so you sleep the thread for
-		 * a second to allow it some time to catch up
-		 * 
-		 * the duration will return 0 if you do not do this
+		 * The media takes some time to load so you need to resister 
+		 * a listen with the MediaPlayer object to commence playing
+		 * once the status is switched to READY
 		 */
+		currentPlayer.setOnReady(new OnMediaReadyEvent(songFile));
+		
 
-		CurrentSongBean currentSong = new CurrentSongBean(player
-				.getTotalDuration().toMillis(), player);
-		this.currentPlayer = player;
+		CurrentSongBean currentSong = new CurrentSongBean(currentPlayer
+				.getTotalDuration().toMillis(), currentPlayer);
 
 		return currentSong;
 	}
@@ -201,21 +214,34 @@ public class AlbumTunesController {
 
 		@Override
 		public void run() {
-			songNumber++;
+					
 			if (songNumber < songsInAlbum.size()) {
-				FileBean songPath = songsInAlbum.get(songNumber);
+				
+				/*
+				 * While loop makes sure unsupported file types are skipped but does not
+				 * stop the flow of the album
+				 */
 				CurrentSongBean currentSong = null;
+				while(currentSong == null){
+					FileBean songPath = songsInAlbum.get(songNumber);
+					
+					try {
+						currentSong = playASong(songPath);
+						
+						updateLabelLater(userWarningLabel, String.format(
+								"Now Playing: %s\nDuration: %.2f", songPath.getName(),
+								currentSong.getDuration() / 60_000.0));
+						
+					} catch (MediaException e) {
+						System.out.println("Not a supported File:" + songPath);
+						
+					} catch (IndexOutOfBoundsException e){
+						userWarningLabel.setText("Album Finished");
+						currentSong = new CurrentSongBean(0.0, null);
+					}
 
-				try {
-					currentSong = playASong(songPath);
-				} catch (InterruptedException e) {
-					System.out
-							.println("song interrupted before loading in EndOfMediaEventHandler");
+					
 				}
-
-				updateLabelLater(userWarningLabel, String.format(
-						"Now Playing: %s\nDuration: %.2f", songPath.getName(),
-						currentSong.getDuration() / 60_000.0));
 
 			} else {
 				updateLabelLater(userWarningLabel, "Album Finished");

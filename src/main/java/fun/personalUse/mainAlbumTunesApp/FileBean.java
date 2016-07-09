@@ -58,5 +58,10 @@ public class FileBean {
 		this.name = name;
 	}
 	
+	@Override
+	public String toString(){
+		return getLocation();
+	}
+	
 	
 }
