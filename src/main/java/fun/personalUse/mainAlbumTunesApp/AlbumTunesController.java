@@ -82,8 +82,6 @@ public class AlbumTunesController {
 	}
 	
 	public void restartAlbumButtonListener(){
-		// reset index variable to 0
-		songNumber = 0;
 		// reset album directory path
 		albumDirectoryPath = "";
 		startAlbum();
@@ -93,6 +91,9 @@ public class AlbumTunesController {
 	 * initiates both the playing or replaying of the album
 	 */
 	private void startAlbum(){
+		
+		// reset index variable to 0
+		songNumber = 0;
 		
 		/*
 		 * Stops playing the current playing if on exists
