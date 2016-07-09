@@ -82,18 +82,32 @@ public class AlbumTunesController {
 	}
 	
 	public void restartAlbumButtonListener(){
+		// reset index variable to 0
 		songNumber = 0;
+		// reset album directory path
 		albumDirectoryPath = "";
-		songsInAlbum = null;
 		startAlbum();
 	}
 	
+	/*
+	 * initiates both the playing or replaying of the album
+	 */
 	private void startAlbum(){
+		
+		/*
+		 * Stops playing the current playing if on exists
+		 */
 		if(currentPlayer != null){
 			currentPlayer.stop();
 			currentPlayer = null;
 		}
+		
+		/*
+		 *  Assigns the current directory path so that album can
+		 *  only be played from the restart album button
+		 */
 		albumDirectoryPath = pathTextField.getText();
+		
 		
 		songsInAlbum = gatherAllMediaFiles();
 		if (shuffleBox.isSelected()) {
@@ -105,17 +119,29 @@ public class AlbumTunesController {
 		 * stop the flow of the album
 		 */
 		Object flowMaintainer = null;
-		while(flowMaintainer == null)
+		while(flowMaintainer == null){
+			
+			FileBean songPath = null;
 			try {
-				flowMaintainer = playASong(songsInAlbum.get(songNumber));
+				songPath = songsInAlbum.get(songNumber);
+				flowMaintainer = playASong(songPath);
 			} catch (MediaException e) {
-				System.out.println("Not a supported File: " + songsInAlbum.get(songNumber - 1));
+				System.out.println("Not a supported File: " + songPath);
+				
+				/*
+				 * if last file is not supported, end the while loop
+				 */
 			} catch (IndexOutOfBoundsException e){
 				userWarningLabel.setText("Album Finished");
 				flowMaintainer = new Object();
+			}
 		}
 	}
 
+	/**
+	 * Gathers all files in the directory. Does not filter based on file extension
+	 * @return
+	 */
 	private ArrayList<FileBean> gatherAllMediaFiles() {
 		ArrayList<FileBean> musicFiles = new ArrayList<>();
 
@@ -140,6 +166,7 @@ public class AlbumTunesController {
 	}
 
 	private CurrentSongBean playASong(FileBean songFile) {
+		// increments index variable 'songNumber' each time playASong() is called
 		songNumber++;
 		
 		// %20 encodes spaces into the URL so that there are no illegal
@@ -223,9 +250,10 @@ public class AlbumTunesController {
 				 */
 				CurrentSongBean currentSong = null;
 				while(currentSong == null){
-					FileBean songPath = songsInAlbum.get(songNumber);
 					
+					FileBean songPath = null;
 					try {
+						songPath = songsInAlbum.get(songNumber);
 						currentSong = playASong(songPath);
 						
 						updateLabelLater(userWarningLabel, String.format(
@@ -235,8 +263,11 @@ public class AlbumTunesController {
 					} catch (MediaException e) {
 						System.out.println("Not a supported File:" + songPath);
 						
+						/*
+						 * If last file is not supported, end the while loop
+						 */
 					} catch (IndexOutOfBoundsException e){
-						userWarningLabel.setText("Album Finished");
+						updateLabelLater(userWarningLabel, "Album Finished");
 						currentSong = new CurrentSongBean(0.0, null);
 					}
 
