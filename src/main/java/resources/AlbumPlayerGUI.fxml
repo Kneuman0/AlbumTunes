@@ -8,10 +8,13 @@
 
 <AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fun.personalUse.mainAlbumTunesApp.AlbumTunesController">
    <children>
-      <Button fx:id="startButton" layoutX="217.0" layoutY="313.0" mnemonicParsing="false" onAction="#startButtonListener" prefHeight="62.0" prefWidth="168.0" text="Start Album">
+      <Button fx:id="startButton" layoutX="217.0" layoutY="313.0" mnemonicParsing="false" onAction="#startButtonListener" prefHeight="62.0" prefWidth="168.0" text="Start Album" textFill="#00b21b">
          <effect>
             <InnerShadow choke="0.4" color="WHITE" />
-         </effect></Button>
+         </effect>
+         <font>
+            <Font size="24.0" />
+         </font></Button>
       <TextField fx:id="pathTextField" layoutX="26.0" layoutY="140.0" onAction="#startButtonListener" prefHeight="25.0" prefWidth="548.0">
          <effect>
             <InnerShadow choke="0.4" color="WHITE" />
@@ -41,19 +44,19 @@
          <effect>
             <DropShadow color="WHITE" spread="0.85" />
          </effect></CheckBox>
-      <Button fx:id="nextButton" layoutX="370.0" layoutY="174.0" mnemonicParsing="false" onAction="#nextSongButtonListener" text="Next">
+      <Button fx:id="nextButton" layoutX="370.0" layoutY="174.0" mnemonicParsing="false" onAction="#nextSongButtonListener" text="Next" textFill="#3c00ff">
          <effect>
             <InnerShadow choke="0.4" color="WHITE" />
          </effect></Button>
-      <Button fx:id="pauseButton" layoutX="183.0" layoutY="174.0" mnemonicParsing="false" onAction="#pauseButtonListener" text="Pause">
+      <Button fx:id="pauseButton" layoutX="183.0" layoutY="174.0" mnemonicParsing="false" onAction="#pauseButtonListener" text="Pause" textFill="#ab0000">
          <effect>
             <InnerShadow choke="0.4" color="WHITE" />
          </effect></Button>
-      <Button fx:id="resumeButton" layoutX="271.0" layoutY="174.0" mnemonicParsing="false" onAction="#resumeButtonListener" text="Resume">
+      <Button fx:id="resumeButton" layoutX="271.0" layoutY="174.0" mnemonicParsing="false" onAction="#resumeButtonListener" text="Resume" textFill="#0fb500">
          <effect>
             <InnerShadow choke="0.4" color="WHITE" />
          </effect></Button>
-      <Button fx:id="restartAlbumButton" layoutX="255.0" layoutY="271.0" mnemonicParsing="false" onAction="#restartAlbumButtonListener" text="Restart Album">
+      <Button fx:id="restartAlbumButton" layoutX="255.0" layoutY="271.0" mnemonicParsing="false" onAction="#restartAlbumButtonListener" text="Restart Album" textFill="#1500ff">
          <effect>
             <InnerShadow choke="0.8" color="#fffefe" />
          </effect>
