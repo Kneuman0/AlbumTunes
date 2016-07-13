@@ -2,19 +2,43 @@ package fun.personalUse.mainAlbumTunesApp;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 public class FileBean {
-	File file;
-	String location;
-	String name;
+	private File file;
+	private String location;
+	private String name;
+	private String url;
 	
-	public FileBean(File file) throws FileNotFoundException{
+	public FileBean(File file) throws FileNotFoundException, UnsupportedEncodingException{
 		this.file = file;
 		location = file.getAbsolutePath().replace("\\", "/");
+		
+		// encode all special characters.
+		// URLEncoder puts a '+' where a ' ' is so change all '+' to encoded space '%20'
+		url = URLEncoder.encode(location, "UTF-8").replace("+", "%20");
 		System.out.println(location);
 		String[] folders = location.split("/");
 		this.name = folders[folders.length - 1];
 	}
+
+	
+	/**
+	 * @return the url
+	 */
+	public String getUrl() {
+		return url;
+	}
+
+
+	/**
+	 * @param url the url to set
+	 */
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
 
 	/**
 	 * @return the file
@@ -60,7 +84,7 @@ public class FileBean {
 	
 	@Override
 	public String toString(){
-		return getLocation();
+		return getUrl();
 	}
 	
 	

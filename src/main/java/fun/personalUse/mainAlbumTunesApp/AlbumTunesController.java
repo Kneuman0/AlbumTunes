@@ -2,6 +2,7 @@ package fun.personalUse.mainAlbumTunesApp;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -128,6 +129,7 @@ public class AlbumTunesController {
 				flowMaintainer = playASong(songPath);
 			} catch (MediaException e) {
 				System.out.println("Not a supported File: " + songPath);
+				System.out.println(e.getMessage());
 				
 				/*
 				 * if last file is not supported, end the while loop
@@ -135,6 +137,8 @@ public class AlbumTunesController {
 			} catch (IndexOutOfBoundsException e){
 				userWarningLabel.setText("Album Finished");
 				flowMaintainer = new Object();
+			} catch (Exception e){
+				e.printStackTrace();
 			}
 		}
 	}
@@ -153,7 +157,7 @@ public class AlbumTunesController {
 			for (int i = 0; i < files.length; i++) {
 				try {
 					musicFiles.add(new FileBean(files[i]));
-				} catch (FileNotFoundException e) {
+				} catch (FileNotFoundException | UnsupportedEncodingException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -173,12 +177,11 @@ public class AlbumTunesController {
 		// %20 encodes spaces into the URL so that there are no illegal
 		// characters
 		// the '///' are necessary for a URL
-		Media song = new Media(String.format("file:///%s", songFile
-				.getLocation().replaceAll("\\s", "%20")));
+		
+		Media song = new Media(String.format("file:///%s", songFile.getUrl()));
 		currentPlayer = new MediaPlayer(song);
 		currentPlayer.setOnEndOfMedia(new EndOfMediaEventHandler());
 		currentPlayer.setOnStopped(new EndOfMediaEventHandler());
-		currentPlayer.setOnPaused(new PauseEventHandler());
 		
 		/*
 		 * The media takes some time to load so you need to resister 
@@ -186,7 +189,7 @@ public class AlbumTunesController {
 		 * once the status is switched to READY
 		 */
 		currentPlayer.setOnReady(new OnMediaReadyEvent(songFile));
-		
+		System.out.println("Just got created: " + currentPlayer);
 
 		CurrentSongBean currentSong = new CurrentSongBean(currentPlayer
 				.getTotalDuration().toMillis(), currentPlayer);
@@ -230,8 +233,9 @@ public class AlbumTunesController {
 			String songInfo = String.format(
 					"Now Playing: %s\nDuration: %.2f", songFile.getName(), currentPlayer
 					.getTotalDuration().toMillis() / 60_000.0);
-			currentPlayer.getTotalDuration().toMillis();
+			System.out.println("Just got called: " + currentPlayer);
 			updateLabelLater(userWarningLabel, songInfo);
+			
 			currentPlayer.play();
 			
 		}
@@ -254,6 +258,7 @@ public class AlbumTunesController {
 					
 					FileBean songPath = null;
 					try {
+						System.out.println(songNumber);
 						songPath = songsInAlbum.get(songNumber);
 						currentSong = playASong(songPath);
 						
@@ -278,17 +283,6 @@ public class AlbumTunesController {
 			} else {
 				updateLabelLater(userWarningLabel, "Album Finished");
 			}
-
-		}
-
-	}
-
-
-	private class PauseEventHandler implements Runnable {
-
-		@Override
-		public void run() {
-			pause = true;
 
 		}
 

@@ -88,6 +88,12 @@ public class CurrentSongBean {
 		this.player = player;
 	}
 	
+	@Override
+	public String toString(){
+		return String.format("Artist: %s\nDuration: %.2f\n", 
+				getArtistName(), getDuration());
+	}
+	
 	
 
 }
