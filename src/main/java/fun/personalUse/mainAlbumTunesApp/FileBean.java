@@ -15,9 +15,11 @@ public class FileBean {
 		this.file = file;
 		location = file.getAbsolutePath().replace("\\", "/");
 		
-		// encode all special characters.
-		// URLEncoder puts a '+' where a ' ' is so change all '+' to encoded space '%20'
-		// Then change the Unicode '%2B' back to '+'
+		/*
+		 * encode all special characters.
+		 * URLEncoder puts a '+' where a ' ' is so change all '+' to encoded space '%20'.
+		 * Then change the Unicode '%2B' back to '+' in case there is an actual '+' in the path.
+		 */
 		url = URLEncoder.encode(location, "UTF-8").replace("+", "%20").replace("%2B", "+");
 		System.out.println(location);
 		String[] folders = location.split("/");
