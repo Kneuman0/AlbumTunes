@@ -2,12 +2,18 @@ package fun.personalUse.mainAlbumTunesApp;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Group;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.SceneBuilder;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -19,9 +25,14 @@ import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.MediaView;
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public class AlbumTunesController {
 
@@ -51,7 +62,6 @@ public class AlbumTunesController {
     private Button restartAlbumButton;
 
 	MediaPlayer currentPlayer;
-	boolean pause;
 	ArrayList<FileBean> songsInAlbum;
 	private int songNumber;
 	private String albumDirectoryPath;
@@ -59,7 +69,6 @@ public class AlbumTunesController {
 	public void initialize() {
 		setBackgroundImage();
 		songNumber = 0;
-		pause = false;
 		albumDirectoryPath = "";
 	}
 
@@ -97,7 +106,7 @@ public class AlbumTunesController {
 		songNumber = 0;
 		
 		/*
-		 * Stops playing the current playing if on exists
+		 * Stops playing the current playing if one exists
 		 */
 		if(currentPlayer != null){
 			currentPlayer.stop();
@@ -237,6 +246,30 @@ public class AlbumTunesController {
 			updateLabelLater(userWarningLabel, songInfo);
 			
 			currentPlayer.play();
+//			MediaView movie = new MediaView(currentPlayer);
+//			  FXMLLoader loader = new FXMLLoader(
+//					    getClass().getResource(
+//					      "/resources/MediaPlayerGUI.fxml"
+//					    )
+//					  );
+//
+//					  Stage stage = new Stage(StageStyle.DECORATED);
+//					 
+//					  VideoPlayerController controller = new VideoPlayerController();
+//					  try {
+//							stage.setScene(
+//							    new Scene(
+//							      (Pane) loader.load()
+//							    )
+//							  );
+//						} catch (IOException e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
+//					  loader.setController(controller);
+//					  controller.playMovie();
+//
+//					  stage.show();
 			
 		}
 		
@@ -287,6 +320,23 @@ public class AlbumTunesController {
 		}
 
 	}
+	
+//	public class VideoPlayerController{
+//		
+//		@FXML private MediaView mediaView;
+//		@FXML public Label label;
+//		
+//		
+//		public void initialize(){
+//			label.setText("Can You Read This?");
+//		}
+//		
+//		public void playMovie(){
+//			mediaView.setMediaPlayer(currentPlayer);
+//		}
+//		
+//		
+//	}
 
 
 }
