@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 
+import biz.personalAcademics.lib.pathClasses.PathGetter;
+
 import com.sun.javafx.geom.DirtyRegionContainer;
 
 import fun.personalUse.customExceptions.NoPlaylistsFoundException;
@@ -20,6 +22,34 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 	private File file;
 	private String xmlDirectory;
 	private ObservableList<FileBean> currentPlaylist ;
+	
+	public XMLMediaPlayerHelper(){
+		playlists = FXCollections.observableArrayList();
+		PathGetter pathGetter = new PathGetter(this);
+		String parentDirectory = pathGetter.getAbsoluteSubfolderPath();
+		String[] folders = parentDirectory.split("/");
+		String parentOfParent = "";
+		for(int i = 0; i < (folders.length - 1); i++){
+			parentOfParent += folders[i] + "/";
+		}
+		parentOfParent += "Media_Player_5000/infoDirectory/";
+		
+		if(parentOfParent == "/Media Player 5000/infoDirectory"){
+			parentOfParent = parentDirectory + "Media_Player_5000/infoDirectory/";
+		}
+		
+		System.out.printf("Parent: %s, ParentOfParent: %s\n", parentDirectory, parentOfParent);
+		File file = new File(parentOfParent);
+		this.file = file;
+		
+		if(file.mkdirs()){
+			System.out.println("Directory sucessfully created");
+		}else{
+			System.out.println("Directory not created");
+		}
+		
+		this.setXmlDirectory(parentOfParent);
+	}
 	
 	
 	public XMLMediaPlayerHelper(String directoryPathToXMLs){
@@ -38,11 +68,14 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 	 */
 	public void loadAllPlaylists() 
 			throws FileNotFoundException, NoPlaylistsFoundException{
+		
+		
 		File[] playlistXMLs = null;
 		if(file.isDirectory() && file.canRead()){
 			playlistXMLs = file.listFiles();
+		}else{
+			throw new NoPlaylistsFoundException();
 		}
-		
 		
 		boolean playlistXMLDoesNotExist = true;
 		for(File xml : playlistXMLs){

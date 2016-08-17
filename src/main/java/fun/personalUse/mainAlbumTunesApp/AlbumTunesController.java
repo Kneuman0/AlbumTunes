@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 
+import biz.personalAcademics.lib.pathClasses.PathGetter;
 import fun.personalUse.customExceptions.NoPlaylistsFoundException;
 import fun.personalUse.dataModel.CurrentSongBean;
 import fun.personalUse.dataModel.FileBean;
@@ -262,7 +263,8 @@ public class AlbumTunesController {
 	
 	private void initalizeTableView(){
 		musicHandler = new XMLMediaPlayerHelper(
-				"C:/Users/Karottop/git/AlbumTunes/SimplePlayer/infoDirectory");
+//				"C:/Users/Karottop/git/AlbumTunes/SimplePlayer/infoDirectory"
+				);
 		songNameCol.setCellValueFactory(new PropertyValueFactory<FileBean, String>("songName"));
 		albumCol.setCellValueFactory(new PropertyValueFactory<FileBean, String>("album"));
 		artistCol.setCellValueFactory(new PropertyValueFactory<FileBean, String>("artist"));
@@ -500,7 +502,7 @@ public class AlbumTunesController {
 //					"C:/Users/Karottop/git/AlbumTunes/SimplePlayer/infoDirectory/playlists.xml");
 			try {
 				musicHandler.findNewSongs(path);
-				musicHandler.exportPlaylistsToXML();
+				
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -510,8 +512,7 @@ public class AlbumTunesController {
 			}
 			ObservableList<FileBean> songArray = musicHandler.getMainPlaylist().getSongsInPlaylist();
 			updateLabelLater(digLabel, "complete: " + songArray.size());
-//			updateLabelLater(digLabel, "");
-//			Thread.sleep(1000 * 10);
+			musicHandler.exportPlaylistsToXML();
 			
 
 		}
@@ -545,7 +546,7 @@ public class AlbumTunesController {
 						+ "Grab some coffee or something..**";
 				findNewSongs(title, header, content);
 				// need to handle file not found exception in new thread
-				updateLabelLater(digLabel, "loading...");
+//				updateLabelLater(digLabel, "loading...");
 				tableView.setItems(musicHandler.getMainPlaylist().getSongsInPlaylist());
 				playlistTable.setItems(musicHandler.getPlaylists());
 				Platform.runLater(new SelectIdexOnTable(playlistTable, 0));

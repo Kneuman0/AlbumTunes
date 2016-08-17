@@ -11,9 +11,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/mp3agic-0.8.5-SNAPSHOT-javadoc.jar"/>
-	<classpathentry kind="lib" path="lib/mp3agic-0.8.5-SNAPSHOT-sources.jar"/>
-	<classpathentry kind="lib" path="lib/mp3agic-0.8.5-SNAPSHOT.jar"/>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
@@ -25,5 +22,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/libraries.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

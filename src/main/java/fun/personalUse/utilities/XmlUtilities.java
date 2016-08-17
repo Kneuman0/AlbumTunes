@@ -37,13 +37,6 @@ public class XmlUtilities {
 		File directory = new File(directoryToPlaylistXMLs.replace("\\", "/"));
 		this.directoryPath = directoryToPlaylistXMLs;
 
-		// // digs through the directory in search for all mp3 songs
-		// try {
-		// digSongs(songs, directory);
-		// } catch (FileNotFoundException | UnsupportedEncodingException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
 	}
 
 	/**
