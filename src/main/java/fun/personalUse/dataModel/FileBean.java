@@ -10,7 +10,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
-public class FileBean implements Comparator, Comparable{
+public class FileBean implements Comparator<FileBean>, Comparable<FileBean>{
 	private File file;
 	private SimpleStringProperty location;
 	private SimpleStringProperty songName;
@@ -298,18 +298,9 @@ public class FileBean implements Comparator, Comparable{
 		return String.format("%s, %s, %s", getSongName(), getArtist(), getAlbum());
 	}
 
-	@Override
-	public int compare(Object FileBean1, Object FileBean2) {
-		FileBean bean1 = (FileBean)FileBean1;
-		FileBean bean2 = (FileBean)FileBean2;
-		
-		return bean1.compareTo(bean2);
-	}
 
 	@Override
-	public int compareTo(Object o) {
-		FileBean bean = (FileBean)o;
-		
+	public int compareTo(FileBean bean) {
 		if(this.getLocation().compareTo(bean.getLocation()) > 0){
 			return 1;
 		}else if(this.getLocation().compareTo(bean.getLocation()) < 0){
@@ -317,6 +308,12 @@ public class FileBean implements Comparator, Comparable{
 		} else{
 			return 0;
 		}
+	}
+
+	@Override
+	public int compare(FileBean bean1, FileBean bean2) {
+		// TODO Auto-generated method stub
+		return bean1.compareTo(bean2);
 	}
 	
 	

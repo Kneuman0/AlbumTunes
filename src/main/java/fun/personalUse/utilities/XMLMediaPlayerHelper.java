@@ -6,13 +6,10 @@ import java.io.UnsupportedEncodingException;
 
 import biz.personalAcademics.lib.pathClasses.PathGetter;
 
-import com.sun.javafx.geom.DirtyRegionContainer;
-
 import fun.personalUse.customExceptions.NoPlaylistsFoundException;
 import fun.personalUse.dataModel.FileBean;
 import fun.personalUse.dataModel.PlaylistBean;
 import fun.personalUse.dataModel.PlaylistBeanMain;
-import fun.personalUse.utilities.XmlUtilities.OnMediaReadyEvent;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 

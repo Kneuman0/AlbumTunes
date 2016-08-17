@@ -10,14 +10,12 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import fun.personalUse.dataModel.FileBean;
 import fun.personalUse.dataModel.PlaylistBean;
-import fun.personalUse.dataModel.PlaylistBeanMain;
 
 /**
  * class that handles importing exporting of objects to XML files.
@@ -28,13 +26,14 @@ import fun.personalUse.dataModel.PlaylistBeanMain;
 public class XmlUtilities {
 
 	protected String directoryPath;
+	protected File directory;
 
 	public XmlUtilities() {
 		directoryPath = null;
 	}
 
 	public XmlUtilities(String directoryToPlaylistXMLs) {
-		File directory = new File(directoryToPlaylistXMLs.replace("\\", "/"));
+		this.directory = new File(directoryToPlaylistXMLs.replace("\\", "/"));
 		this.directoryPath = directoryToPlaylistXMLs;
 
 	}
@@ -190,6 +189,7 @@ public class XmlUtilities {
 
 		// ObservableLists apparently cannot be encoded so it is converted from
 		// ArrayList to an OnservableArrayList
+		@SuppressWarnings("unchecked")
 		ArrayList<PlaylistBean> fromXML = (ArrayList<PlaylistBean>) decoder
 				.readObject();
 		tempPlaylists = FXCollections.observableArrayList(fromXML);
@@ -216,6 +216,7 @@ public class XmlUtilities {
 
 		// ObservableLists apparently cannot be encoded so it is converted from
 		// ArrayList to an OnservableArrayList
+		@SuppressWarnings("unchecked")
 		ArrayList<PlaylistBean> fromXML = (ArrayList<PlaylistBean>) decoder
 				.readObject();
 		tempPlaylists = FXCollections.observableArrayList(fromXML);

@@ -8,18 +8,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 
-import biz.personalAcademics.lib.pathClasses.PathGetter;
 import fun.personalUse.customExceptions.NoPlaylistsFoundException;
 import fun.personalUse.dataModel.CurrentSongBean;
 import fun.personalUse.dataModel.FileBean;
 import fun.personalUse.dataModel.PlaylistBean;
 import fun.personalUse.utilities.XMLMediaPlayerHelper;
-import fun.personalUse.utilities.XmlUtilities;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -35,12 +31,9 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
@@ -52,7 +45,6 @@ import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
-import javafx.stage.FileChooser.ExtensionFilter;
 
 public class AlbumTunesController {
 
@@ -295,10 +287,14 @@ public class AlbumTunesController {
 		if(result.get() == singleMp3){
 			FileChooser fileChooser = new FileChooser();
 			fileChooser.setTitle("Location of mp3s");
-			fileChooser.setSelectedExtensionFilter(
-					new ExtensionFilter("Audio Files", "*.mp3"));
+//			fileChooser.setSelectedExtensionFilter(
+//					new ExtensionFilter("Audio Files", "*.mp3"));
 			
 			File selectedFile = fileChooser.showOpenDialog(resumeButton.getScene().getWindow());
+			
+			if(selectedFile == null){
+				return;
+			}
 			Thread findSongs = new Thread(new DigSongs(selectedFile.getAbsolutePath()));
 			findSongs.start();
 			
@@ -307,6 +303,10 @@ public class AlbumTunesController {
 			fileChooser.setTitle("Location to mine for mp3s");
 			
 			File selectedFile = fileChooser.showDialog(resumeButton.getScene().getWindow());
+			
+			if(selectedFile == null){
+				return;
+			}
 			Thread findSongs = new Thread(new DigSongs(selectedFile.getAbsolutePath()));
 			findSongs.start();
 			
@@ -582,7 +582,7 @@ public class AlbumTunesController {
 		public void run() {
 			this.table.requestFocus();
 			this.table.getSelectionModel().selectFirst();
-			this.table.getFocusModel().focus(0);
+			this.table.getFocusModel().focus(index);
 		}
 		
 	}
