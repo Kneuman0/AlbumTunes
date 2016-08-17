@@ -24,7 +24,14 @@ public class AlbumTunesMain extends Application{
 			stage.setTitle("Album Player");
 			stage.setScene(scene);
 			stage.show();
+			
 		}
+	
+	@Override
+	public void stop(){
+	    System.out.println("Stage is closing");
+	    // Save file
+	}
 
 		/**
 		 * creates application in memory

@@ -1,4 +1,4 @@
-package fun.personalUse.mainAlbumTunesApp;
+package fun.personalUse.dataModel;
 
 import java.io.File;
 import java.io.IOException;

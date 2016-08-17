@@ -1,82 +1,145 @@
 package fun.personalUse.mainAlbumTunesApp;
 
+
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Optional;
 
+import fun.personalUse.customExceptions.NoPlaylistsFoundException;
+import fun.personalUse.dataModel.CurrentSongBean;
+import fun.personalUse.dataModel.FileBean;
+import fun.personalUse.dataModel.PlaylistBean;
+import fun.personalUse.utilities.XMLMediaPlayerHelper;
+import fun.personalUse.utilities.XmlUtilities;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Group;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.SceneBuilder;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
-import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
-import javafx.scene.media.MediaView;
-import javafx.scene.paint.Color;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 
 public class AlbumTunesController {
 
-	@FXML
-	private Button startButton;
+    @FXML
+    private Label userWarningLabel;
 
-	@FXML
-	private TextField pathTextField;
+    @FXML
+    private Button pauseButton;
 
-	@FXML
-	private Button nextButton;
+    @FXML
+    private Button startButton;
 
-	@FXML
-	private Label userWarningLabel;
+    @FXML
+    private TableView<FileBean> metaDataTable;
 
-	@FXML
-	private Button pauseButton;
+    @FXML
+    private TableColumn<FileBean, String> durationCol;
 
-	@FXML
-	private CheckBox shuffleBox;
+    @FXML
+    private TextField pathTextField;
 
-	@FXML
-	private AnchorPane anchorPane;
-	
+    @FXML
+    private Button resumeButton;
+
+    @FXML
+    private TableColumn<FileBean, String> artistCol;
+
+    @FXML
+    private AnchorPane MediaPlayerAnchorPane;
+
+    @FXML
+    private AnchorPane AlbumPlayerAnchorPane;
+
+    @FXML
+    private CheckBox shuffleBox;
+
+    @FXML
+    private TableColumn<FileBean, String> songNameCol;
+
+    @FXML
+    private Button nextButton;
+
+    @FXML
+    private Label digLabel;
+    
+    @FXML
+    private TableView<PlaylistBean> playlistTable;
+    
+    @FXML
+    private TableColumn<PlaylistBean, String> playlistColumn;
 
     @FXML
     private Button restartAlbumButton;
 
+    @FXML
+    private TableColumn<FileBean, String> albumCol;
+    
+    @FXML
+    private Button addPlaylistButton;
+    
+    @FXML
+    private Button addSongsToPlaylistButton;
+    
+    @FXML
+    private TextField searchBox;
+    
+    @FXML
+    private Button mineMP3sButton;
+
+
 	MediaPlayer currentPlayer;
-	ArrayList<FileBean> songsInAlbum;
+	ObservableList<FileBean> songsInAlbum;
+	ArrayList<Integer> songIndexes;
 	private int songNumber;
-	private String albumDirectoryPath;
+	XMLMediaPlayerHelper musicHandler;
 
 	public void initialize() {
 		setBackgroundImage();
 		songNumber = 0;
-		albumDirectoryPath = "";
+		initalizeTableView();
+		songsInAlbum = metaDataTable.getItems();
+		songIndexes = new ArrayList<>();
+		Platform.runLater(new SelectIdexOnTable(playlistTable, 0));
 	}
 
 	public void startButtonListener() throws FileNotFoundException {
-		if (!albumDirectoryPath.equals(pathTextField.getText())) {
-			startAlbum();
-		}
-
+		songsInAlbum = metaDataTable.getItems();
+		startAlbum(metaDataTable.getSelectionModel().getSelectedIndex());
 	}
 
 	public void nextSongButtonListener() {
@@ -92,18 +155,188 @@ public class AlbumTunesController {
 	}
 	
 	public void restartAlbumButtonListener(){
-		// reset album directory path
-		albumDirectoryPath = "";
-		startAlbum();
+		// restarts the album from the first index
+		startAlbum(0);
+		songNumber = 0;
+	}
+	
+	@FXML
+	public void exitApplication(ActionEvent event) {
+		savePlaylists();
+		System.out.println("System is closing inside controller");
+		Platform.exit();
+	}
+		
+	public void addPlaylistButtonListener(){
+		TextInputDialog dialog = new TextInputDialog();
+		dialog.setHeaderText("Enter Playlist Name");
+		dialog.setTitle("New Playlist");
+		dialog.showAndWait();
+		
+		musicHandler.addPlaylist(dialog.getEditor().getText());
+		savePlaylists();
+	}
+	
+	public void addSongsToPlaylistButtonListener(){
+		ObservableList<FileBean> songsToBeAdded = 
+				metaDataTable.getSelectionModel().getSelectedItems();
+		PlaylistBean playlist = playlistTable.getSelectionModel().getSelectedItem();
+		playlist.getSongsInPlaylist().addAll(songsToBeAdded);
+		savePlaylists();
+	}
+	
+	public void displayPlaylistButtonListener(MouseEvent event){
+		if(event.getClickCount() == 2){
+			PlaylistBean playlist = playlistTable.getSelectionModel().getSelectedItem();
+			metaDataTable.setItems(playlist.getSongsInPlaylist());
+			musicHandler.setCurrentPlaylist(playlist.getSongsInPlaylist());
+		}
+	}
+	
+	public void playSelectedSong(MouseEvent event){
+		System.out.println("insidePlay Selected");
+		 if (event.getClickCount() == 2) {
+			 songsInAlbum = metaDataTable.getItems();
+	         startAlbum(metaDataTable.getSelectionModel().getSelectedIndex());
+	            
+	        }
+	}
+	
+	public void onTableSort(){
+		songsInAlbum = metaDataTable.getItems();
+		for(int i = 0; i < 10; i++){
+			System.out.println(songsInAlbum.get(i).getSongName());
+		}
+	}
+	
+	public void onPlaylistSearch(){
+		String search = searchBox.getText();
+		if(search.equals("")){
+			metaDataTable.setItems(musicHandler.getCurrentPlaylist());
+		}else{
+			metaDataTable.setItems(
+					musicHandler.getsubListFromSearchResult(
+							search, metaDataTable.getItems()));
+		}
+	}
+	
+	public void mineMP3sButtonListener(){
+		String title = "Please make a selection";
+		String header = "mp3 mining options...";
+		String content = "Do you want to import a single mp3\n"
+				+ "or a folder containing many mp3s?";
+		findNewSongs(title, header, content);
+	}
+	
+	public void onDeleteSong(KeyEvent event){
+		if(event.getCode().equals(KeyCode.DELETE)
+				|| event.getCode().equals(KeyCode.BACK_SPACE)){
+			ObservableList<Integer> songIndicesToDelete = 
+					metaDataTable.getSelectionModel().getSelectedIndices();
+			
+			for(Integer index : songIndicesToDelete){
+				System.out.println(musicHandler.getCurrentPlaylist().remove(index.intValue()));
+			}
+			
+		}
+	}
+	
+	public void onDeletePlaylist(KeyEvent event){
+		if(event.getCode().equals(KeyCode.DELETE)
+				|| event.getCode().equals(KeyCode.BACK_SPACE)){
+			Alert deleteOK = new Alert(AlertType.CONFIRMATION);
+			deleteOK.setHeaderText(null);
+			deleteOK.setContentText("Are you sure you want to delete this playlist?");
+			deleteOK.showAndWait();
+			
+			if(deleteOK.getResult() == ButtonType.OK){
+				int index = playlistTable.getSelectionModel().getSelectedIndex();
+				musicHandler.getPlaylists().remove(index);
+			}
+			
+			
+		}
+	}
+	
+	
+	
+	private void initalizeTableView(){
+		musicHandler = new XMLMediaPlayerHelper(
+				"C:/Users/Karottop/git/AlbumTunes/SimplePlayer/infoDirectory");
+		songNameCol.setCellValueFactory(new PropertyValueFactory<FileBean, String>("songName"));
+		albumCol.setCellValueFactory(new PropertyValueFactory<FileBean, String>("album"));
+		artistCol.setCellValueFactory(new PropertyValueFactory<FileBean, String>("artist"));
+		durationCol.setCellValueFactory(new PropertyValueFactory<FileBean, String>("duration"));
+		playlistColumn.setCellValueFactory(new PropertyValueFactory<PlaylistBean, String>("playlistName"));
+		
+		// does not halt program during startup
+		Platform.runLater(new LoadAllMusicFiles(metaDataTable));
+		
+		
+		// need to make similar methods for playlist loading
+		
+		metaDataTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+	}
+	
+	private void findNewSongs(String title, String header, String content){
+		Alert importType = new Alert(AlertType.CONFIRMATION);
+		importType.setTitle(title);
+		importType.setHeaderText(header);
+		importType.setContentText(content);
+		
+		ButtonType singleMp3 = new ButtonType("Single mp3");
+		ButtonType folderOfmp3s = new ButtonType("Folder Of mp3s");
+		ButtonType cancel = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+		importType.getButtonTypes().setAll(singleMp3, folderOfmp3s, cancel);
+		
+		Optional<ButtonType> result = importType.showAndWait();
+		if(result.get() == singleMp3){
+			FileChooser fileChooser = new FileChooser();
+			fileChooser.setTitle("Location of mp3s");
+			fileChooser.setSelectedExtensionFilter(
+					new ExtensionFilter("Audio Files", "*.mp3"));
+			
+			File selectedFile = fileChooser.showOpenDialog(resumeButton.getScene().getWindow());
+			Thread findSongs = new Thread(new DigSongs(selectedFile.getAbsolutePath()));
+			findSongs.start();
+			
+		}else if(result.get() == folderOfmp3s){
+			DirectoryChooser fileChooser = new DirectoryChooser();
+			fileChooser.setTitle("Location to mine for mp3s");
+			
+			File selectedFile = fileChooser.showDialog(resumeButton.getScene().getWindow());
+			Thread findSongs = new Thread(new DigSongs(selectedFile.getAbsolutePath()));
+			findSongs.start();
+			
+		}else{
+			return;
+		}
+	}
+	
+	/**
+	 * Exports playlists to the infoDirectory using a new thread
+	 */
+	private void savePlaylists(){
+		Thread exportPlaylists = new Thread(new ExportPlaylistsToXML());
+		exportPlaylists.start();
 	}
 	
 	/*
 	 * initiates both the playing or replaying of the album
 	 */
-	private void startAlbum(){
-		
-		// reset index variable to 0
+	private void startAlbum(int startIndex){
+		System.out.println("Songs in album" + songsInAlbum.size());
 		songNumber = 0;
+		songIndexes.removeAll(songIndexes);
+		songIndexes.add(startIndex);
+		
+		/*
+		 * populates and arraylist of indices that will be used
+		 * to choose songs to play. Indices start where user selected the song
+		 */
+		for(int i = startIndex; i < songsInAlbum.size(); i++){
+			songIndexes.add(i);
+		}
 		
 		/*
 		 * Stops playing the current playing if one exists
@@ -114,68 +347,20 @@ public class AlbumTunesController {
 		}
 		
 		/*
-		 *  Assigns the current directory path so that album can
+		 *  Assigns the current directory path so that the album can
 		 *  only be played from the restart album button
 		 */
-		albumDirectoryPath = pathTextField.getText();
+//		albumDirectoryPath = pathTextField.getText();
 		
 		
-		songsInAlbum = gatherAllMediaFiles();
+//		songsInAlbum = gatherAllMediaFiles();
 		if (shuffleBox.isSelected()) {
-			Collections.shuffle(songsInAlbum);
+			Collections.shuffle(songIndexes);
 		}
 		
-		/*
-		 * While loop makes sure unsupported file types are skipped but does not
-		 * stop the flow of the album
-		 */
-		Object flowMaintainer = null;
-		while(flowMaintainer == null){
-			
-			FileBean songPath = null;
-			try {
-				songPath = songsInAlbum.get(songNumber);
-				flowMaintainer = playASong(songPath);
-			} catch (MediaException e) {
-				System.out.println("Not a supported File: " + songPath);
-				System.out.println(e.getMessage());
-				
-				/*
-				 * if last file is not supported, end the while loop
-				 */
-			} catch (IndexOutOfBoundsException e){
-				userWarningLabel.setText("Album Finished");
-				flowMaintainer = new Object();
-			} catch (Exception e){
-				e.printStackTrace();
-			}
-		}
-	}
-
-	/**
-	 * Gathers all files in the directory. Does not filter based on file extension
-	 * @return
-	 */
-	private ArrayList<FileBean> gatherAllMediaFiles() {
-		ArrayList<FileBean> musicFiles = new ArrayList<>();
-
-		File directory = new File(pathTextField.getText());
-		if (directory.isDirectory() && directory.canRead()) {
-			File[] files = directory.listFiles();
-
-			for (int i = 0; i < files.length; i++) {
-				try {
-					musicFiles.add(new FileBean(files[i]));
-				} catch (FileNotFoundException | UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		} else {
-			throw new InvalidUserInputException(directory.getAbsolutePath());
-		}
-
-		return musicFiles;
+		// index 0 will be removed each time a song is played
+		// so there will be no repeats
+		playASong(songsInAlbum.get(songIndexes.get(0)));
 
 	}
 
@@ -216,8 +401,10 @@ public class AlbumTunesController {
 				BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
 				BackgroundPosition.CENTER, logoSize);
 		Background background = new Background(image);
-		anchorPane.setBackground(background);
+		AlbumPlayerAnchorPane.setBackground(background);
+		MediaPlayerAnchorPane.setBackground(background);
 	}
+	
 
 	public void updateLabelLater(final Label label, final String message) {
 		Platform.runLater(new Runnable() {
@@ -240,37 +427,15 @@ public class AlbumTunesController {
 		public void run() {
 			
 			String songInfo = String.format(
-					"Now Playing: %s\nDuration: %.2f", songFile.getName(), currentPlayer
-					.getTotalDuration().toMillis() / 60_000.0);
+					"Now Playing: %s\nArtist: %s\nAlbum: %s\nDuration: %.2f", 
+					songFile.getSongName(), songFile.getArtist(), songFile.getAlbum(),
+					currentPlayer.getTotalDuration().toMillis() / 60_000.0);
 			System.out.println("Just got called: " + currentPlayer);
 			updateLabelLater(userWarningLabel, songInfo);
 			
 			currentPlayer.play();
-//			MediaView movie = new MediaView(currentPlayer);
-//			  FXMLLoader loader = new FXMLLoader(
-//					    getClass().getResource(
-//					      "/resources/MediaPlayerGUI.fxml"
-//					    )
-//					  );
-//
-//					  Stage stage = new Stage(StageStyle.DECORATED);
-//					 
-//					  VideoPlayerController controller = new VideoPlayerController();
-//					  try {
-//							stage.setScene(
-//							    new Scene(
-//							      (Pane) loader.load()
-//							    )
-//							  );
-//						} catch (IOException e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}
-//					  loader.setController(controller);
-//					  controller.playMovie();
-//
-//					  stage.show();
-			
+			//removed current song index
+			songIndexes.remove(0);
 		}
 		
 	}
@@ -292,11 +457,12 @@ public class AlbumTunesController {
 					FileBean songPath = null;
 					try {
 						System.out.println(songNumber);
-						songPath = songsInAlbum.get(songNumber);
+						int nextIndex = songIndexes.get(songNumber);
+						songPath = songsInAlbum.get(nextIndex);
 						currentSong = playASong(songPath);
 						
 						updateLabelLater(userWarningLabel, String.format(
-								"Now Playing: %s\nDuration: %.2f", songPath.getName(),
+								"Now Playing: %s\nDuration: %.2f", songPath.getSongName(),
 								currentSong.getDuration() / 60_000.0));
 						
 					} catch (MediaException e) {
@@ -321,22 +487,104 @@ public class AlbumTunesController {
 
 	}
 	
-//	public class VideoPlayerController{
-//		
-//		@FXML private MediaView mediaView;
-//		@FXML public Label label;
-//		
-//		
-//		public void initialize(){
-//			label.setText("Can You Read This?");
-//		}
-//		
-//		public void playMovie(){
-//			mediaView.setMediaPlayer(currentPlayer);
-//		}
-//		
-//		
-//	}
+	public class DigSongs implements Runnable{
+		String path;
+		
+		public DigSongs(String path) {
+			this.path = path;
+		}
+		@Override
+		public void run() {
+			updateLabelLater(digLabel, "loading...");
+//			XMLMediaPlayerHelper musicHandler = new XMLMediaPlayerHelper(
+//					"C:/Users/Karottop/git/AlbumTunes/SimplePlayer/infoDirectory/playlists.xml");
+			try {
+				musicHandler.findNewSongs(path);
+				musicHandler.exportPlaylistsToXML();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			ObservableList<FileBean> songArray = musicHandler.getMainPlaylist().getSongsInPlaylist();
+			updateLabelLater(digLabel, "complete: " + songArray.size());
+//			updateLabelLater(digLabel, "");
+//			Thread.sleep(1000 * 10);
+			
 
+		}
+		
+	}
+	
+	public class LoadAllMusicFiles implements Runnable{
+		
+		private TableView<FileBean> tableView;
+		
+		public LoadAllMusicFiles(TableView<FileBean> tableView) {
+			this.tableView = tableView;
+		}	
+		
+		@Override
+		public void run() {
+			try {
+				musicHandler.loadAllPlaylists();
+				tableView.setItems(musicHandler.getMainPlaylist().getSongsInPlaylist());
+				playlistTable.setItems(musicHandler.getPlaylists());
+
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (NoPlaylistsFoundException e) {
+				String title = "Mine for mp3s";
+				String header = "No playlists were found.\n"
+						+ "These are your mp3 mining options...";
+				String content = "Do you want to import a single mp3\n"
+						+ "or a folder containing many mp3s?\n\n"
+						+ "**Note For large volumes of songs this may take a while.\n"
+						+ "Grab some coffee or something..**";
+				findNewSongs(title, header, content);
+				// need to handle file not found exception in new thread
+				updateLabelLater(digLabel, "loading...");
+				tableView.setItems(musicHandler.getMainPlaylist().getSongsInPlaylist());
+				playlistTable.setItems(musicHandler.getPlaylists());
+				Platform.runLater(new SelectIdexOnTable(playlistTable, 0));
+				tableView.getSelectionModel().selectFirst();
+				
+			}
+			
+		}
+		
+	}
+	
+	public class ExportPlaylistsToXML implements Runnable{
+
+		@Override
+		public void run() {
+			musicHandler.exportPlaylistsToXML();
+			
+		}
+		
+	}
+	
+	private class SelectIdexOnTable implements Runnable{
+		
+		private TableView<?> table;
+		private int index;
+		
+		public SelectIdexOnTable(TableView<?> table, int index) {
+			this.table = table;
+			this.index = index;					
+		}
+
+		@Override
+		public void run() {
+			this.table.requestFocus();
+			this.table.getSelectionModel().selectFirst();
+			this.table.getFocusModel().focus(0);
+		}
+		
+	}
+	
 
 }
