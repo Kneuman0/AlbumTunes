@@ -15,7 +15,7 @@
               <AnchorPane fx:id="MediaPlayerAnchorPane" minHeight="0.0" minWidth="0.0" prefHeight="709.0" prefWidth="800.0">
                      <children>
                         <Button fx:id="addPlaylistButton" layoutX="11.0" layoutY="64.0" mnemonicParsing="false" onAction="#addPlaylistButtonListener" text="+ Add Playlist" />
-                        <TableView fx:id="playlistTable" layoutY="194.0" onKeyPressed="#onDeletePlaylist" onMouseClicked="#displayPlaylistButtonListener" prefHeight="501.0" prefWidth="152.0">
+                        <TableView fx:id="playlistTable" layoutY="193.0" onKeyPressed="#onDeletePlaylist" onMouseClicked="#displayPlaylistButtonListener" prefHeight="501.0" prefWidth="152.0">
                           <columns>
                             <TableColumn fx:id="playlistColumn" prefWidth="151.0" style="border: black;" styleClass="border" text="Playlists" />
                           </columns>
@@ -46,17 +46,17 @@
                               <DropShadow color="WHITE" spread="0.85" />
                            </effect>
                         </Label>
-                        <Button fx:id="pauseButton" layoutX="253.0" layoutY="71.0" mnemonicParsing="false" onAction="#pauseButtonListener" prefHeight="25.0" prefWidth="60.0" text="Pause" textFill="#ab0000">
+                        <Button fx:id="pauseButton" layoutX="254.0" layoutY="76.0" mnemonicParsing="false" onAction="#pauseButtonListener" prefHeight="25.0" prefWidth="60.0" text="Pause" textFill="#ab0000">
                            <effect>
                               <InnerShadow choke="0.4" color="WHITE" />
                            </effect>
                         </Button>
-                        <Button fx:id="resumeButton" layoutX="255.0" layoutY="98.0" mnemonicParsing="false" onAction="#resumeButtonListener" text="Resume" textFill="#0fb500">
+                        <Button fx:id="resumeButton" layoutX="255.0" layoutY="105.0" mnemonicParsing="false" onAction="#resumeButtonListener" text="Resume" textFill="#0fb500">
                            <effect>
                               <InnerShadow choke="0.4" color="WHITE" />
                            </effect>
                         </Button>
-                        <Button fx:id="nextButton" layoutX="255.0" layoutY="124.0" mnemonicParsing="false" onAction="#nextSongButtonListener" prefHeight="25.0" prefWidth="57.0" text="Next" textFill="#3c00ff">
+                        <Button fx:id="nextButton" layoutX="255.0" layoutY="134.0" mnemonicParsing="false" onAction="#nextSongButtonListener" prefHeight="25.0" prefWidth="57.0" text="Next" textFill="#3c00ff">
                            <effect>
                               <InnerShadow choke="0.4" color="WHITE" />
                            </effect>
@@ -66,19 +66,19 @@
                               <DropShadow color="WHITE" spread="0.85" />
                            </effect>
                         </CheckBox>
-                        <Button fx:id="restartAlbumButton" layoutX="255.0" layoutY="147.0" mnemonicParsing="false" onAction="#restartAlbumButtonListener" text="Restart Album" textFill="#1500ff">
+                        <Button fx:id="restartAlbumButton" layoutX="255.0" layoutY="163.0" mnemonicParsing="false" onAction="#restartAlbumButtonListener" text="Restart Album" textFill="#1500ff">
                            <effect>
                               <InnerShadow choke="0.8" color="#fffefe" />
                            </effect>
                         </Button>
-                        <Button fx:id="startButton" layoutX="253.0" layoutY="43.0" mnemonicParsing="false" onAction="#startButtonListener" prefHeight="17.0" prefWidth="61.0" text="Play" textFill="#00b21b">
+                        <Button fx:id="startButton" layoutX="254.0" layoutY="47.0" mnemonicParsing="false" onAction="#startButtonListener" prefHeight="17.0" prefWidth="61.0" text="Play" textFill="#00b21b">
                            <effect>
                               <InnerShadow choke="0.4" color="WHITE" />
                            </effect>
                         </Button>
-                        <TextField fx:id="searchBox" layoutX="417.0" layoutY="160.0" onAction="#onPlaylistSearch" text="Search" />
-                        <Button fx:id="mineMP3sButton" layoutX="586.0" layoutY="160.0" mnemonicParsing="false" onAction="#mineMP3sButtonListener" text="Mine for mp3s" />
-                        <Label fx:id="digLabel" layoutX="680.0" layoutY="156.0" prefHeight="36.0" prefWidth="83.0">
+                        <TextField fx:id="searchBox" layoutX="409.0" layoutY="160.0" onAction="#onPlaylistSearch" text="Search" />
+                        <Button fx:id="mineMP3sButton" layoutX="576.0" layoutY="160.0" mnemonicParsing="false" onAction="#mineMP3sButtonListener" text="Mine for mp3s" />
+                        <Label fx:id="digLabel" layoutX="677.0" layoutY="160.0" prefHeight="25.0" prefWidth="118.0" wrapText="true">
                            <effect>
                               <DropShadow color="WHITE" height="18.04" radius="7.7775" spread="0.84" width="15.07" />
                            </effect>
