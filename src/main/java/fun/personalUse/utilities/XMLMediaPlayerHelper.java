@@ -13,6 +13,12 @@ import fun.personalUse.dataModel.PlaylistBeanMain;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+/**
+ * This class servers as a song and playlist manager for 
+ * a media player
+ * @author Karottop
+ *
+ */
 public class XMLMediaPlayerHelper extends XmlUtilities {
 	
 	private ObservableList<PlaylistBean> playlists;
@@ -20,6 +26,11 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 	private String xmlDirectory;
 	private ObservableList<FileBean> currentPlaylist ;
 	
+	/**
+	 * Should be the default constructor used. This constructor will
+	 * look in the parent directory of the parent directory containing the jar file 
+	 * version of this program.
+	 */
 	public XMLMediaPlayerHelper(){
 		playlists = FXCollections.observableArrayList();
 		PathGetter pathGetter = new PathGetter(this);
@@ -48,7 +59,11 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 		this.setXmlDirectory(parentOfParent);
 	}
 	
-	
+	/**
+	 * Initializes the object with the location to the directory
+	 * containing the XML files
+	 * @param directoryPathToXMLs
+	 */
 	public XMLMediaPlayerHelper(String directoryPathToXMLs){
 		super(directoryPathToXMLs);
 		playlists = FXCollections.observableArrayList();
@@ -95,7 +110,7 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 	
 	/**
 	 * This method will search for songs in a new directory and add them to the song list
-	 * in the main playlist;
+	 * in the main playlist
 	 * @param newDirectory
 	 * @return
 	 * @throws FileNotFoundException
@@ -109,12 +124,14 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 		// add new songs to existing main playlist
 		digSongs(main.getSongsInPlaylist(), file);
 		
+//		deleteIncapatableMediaTypes();
+		
 		return main;
 	}
 	
 	/**
 	 * method used to seek all mp3 files in a specified directory and save them
-	 * to an arrayList
+	 * to an ObservableArrayList
 	 * 
 	 * @param existingSongs
 	 * @param directory
@@ -139,7 +156,9 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 			 * if a file is not a directory, then is it checked to see if it's
 			 * an mp3 file
 			 */
-		} else if (directory.getAbsolutePath().endsWith(".mp3")) {
+		} else if (directory.getAbsolutePath().endsWith(".mp3") 
+//				|| directory.getAbsolutePath().endsWith(".m4a")
+				) {
 			FileBean songBean = new FileBean(directory).getSerializableJavaBean();
 			songBean.getPlayer().setOnReady(new OnMediaReadyEvent(songBean));
 			existingSongs.add(songBean);
@@ -158,7 +177,9 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 	}
 	
 	/**
-	 * Searches through the entire playlist for songs that match the search
+	 * Searches through the entire playlist for songs that match the search.
+	 * 
+	 * The search keys off of the song title, album name, and artist
 	 * @param search
 	 * @param playlist
 	 * @return
@@ -170,7 +191,6 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 		
 		for(FileBean song : playlist){
 			if(song.toString().toLowerCase().contains(search.toLowerCase().trim())){
-				System.out.println();
 				subList.add(song);
 			}
 		}
@@ -294,6 +314,19 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 		playlists.add(main);
 		
 		return main;
+	}
+	
+	public void deleteIncapatableMediaTypes(){
+		ObservableList<FileBean> main = getMainPlaylist().getSongsInPlaylist();
+		for(int i = 0; i < main.size(); i++){
+			FileBean song = main.get(i);
+			if(!song.isMediaInitalized() || song.getDuration() > 0.0){
+				System.out.println("MediaPlayer not initalized for: " + main.get(i));
+				song.setMedia(null);
+				song.setPlayer(null);
+				main.remove(i);
+			}
+		}
 	}
 	
 	

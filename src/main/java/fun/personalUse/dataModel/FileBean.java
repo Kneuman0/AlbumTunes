@@ -7,10 +7,18 @@ import java.net.URLEncoder;
 import java.util.Comparator;
 
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
-public class FileBean implements Comparator<FileBean>, Comparable<FileBean>{
+/**
+ * Data model for use with a media player. This object is intended to store
+ * song data for 1 song
+ * @author Karottop
+ *
+ */
+public class FileBean implements Comparator<FileBean>, Comparable<FileBean>, ChangeListener<String>{
 	private File file;
 	private SimpleStringProperty location;
 	private SimpleStringProperty songName;
@@ -20,8 +28,13 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>{
 	private Media media;
 	private MediaPlayer player;
 	private SimpleStringProperty  duration;
-//	private MediaPlayer tempPlayer;
+	private boolean mediaInitalized;
 	
+	/**
+	 * inserts default or null values for every field. This constructor
+	 * should be used when making a serializable FileBean. setters should
+	 * be used to initialize the object
+	 */
 	public FileBean(){
 		media = null;
 		file = null;
@@ -37,8 +50,16 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>{
 		 *  null pointer exception to be thrown if not initialized
 		 */
 		duration = new SimpleStringProperty("0.0");
+		mediaInitalized = false;
+//		duration.addListener(this);
 	}
 	
+	/**
+	 * Initializes the file bean using a file
+	 * @param file
+	 * @throws FileNotFoundException
+	 * @throws UnsupportedEncodingException
+	 */
 	public FileBean(File file) throws FileNotFoundException, UnsupportedEncodingException{
 		location = new SimpleStringProperty();
 		songName = new SimpleStringProperty();
@@ -71,8 +92,19 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>{
 		this.player = new MediaPlayer(media);
 //		tempPlayer.setOnReady(new OnMediaReadyEvent());
 		setDefaultSongNameAndArtist();
+		mediaInitalized = false;
 	}
 	
+	/**
+	 * This method uses the parent directory strucutre to guesstimate
+	 * what the song name, artist and album name is. a '?' is appended at the
+	 * end of each item to indicate this is a guessed value
+	 * 
+	 * media file that do not adhere to the following directory structure 
+	 * will not be named correctly:
+	 * 
+	 * pathToMedia/Artist/Album/song
+	 */
 	private void setDefaultSongNameAndArtist(){
 		String[] songLocation = getLocation().split("/");
 		String[] songFragment = songLocation[songLocation.length - 1].split("[.]");
@@ -261,6 +293,13 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>{
 		return duration;
 	}
 	
+	/**
+	 * Creates a serializable copy of this object
+	 * by using it's setters. The purpose of this
+	 * method is so that the FileBean objects can
+	 * be exported to an XML
+	 * @return
+	 */
 	public FileBean getSerializableJavaBean(){
 		FileBean temp = new FileBean();
 		temp.setAlbum(this.getAlbum());
@@ -292,13 +331,37 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>{
 			return temp;
 		}
 	}
-		
+	
+	
+	
+	/**
+	 * @return the mediaInitalized
+	 */
+	public boolean isMediaInitalized() {
+		return mediaInitalized;
+	}
+
+	/**
+	 * @param mediaInitalized the mediaInitalized to set
+	 */
+	public void setMediaInitalized(boolean mediaInitalized) {
+		this.mediaInitalized = mediaInitalized;
+	}
+
+	/**
+	 * Returns are string in the following format:
+	 * 
+	 * [song name], [artist name], [album name]
+	 */
 	@Override
 	public String toString(){
 		return String.format("%s, %s, %s", getSongName(), getArtist(), getAlbum());
 	}
 
 
+	/**
+	 * Uses the String.compare() to order FileBeans based on their absolute path
+	 */
 	@Override
 	public int compareTo(FileBean bean) {
 		if(this.getLocation().compareTo(bean.getLocation()) > 0){
@@ -310,10 +373,30 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>{
 		}
 	}
 
+	/**
+	 * uses the compareTo method to compare two files beans.
+	 * 
+	 * This method uses the String.compare() to order FileBeans
+	 * based on their absolute path
+	 */
 	@Override
 	public int compare(FileBean bean1, FileBean bean2) {
 		// TODO Auto-generated method stub
 		return bean1.compareTo(bean2);
+	}
+
+	
+	@Override
+	public void changed(ObservableValue<? extends String> observable,
+			String oldValue, String newValue) {
+		if(Double.isInfinite(Double.parseDouble(newValue))){
+			setDuration(-1.0);
+		} else if(newValue == "0.0"){
+			setDuration(-1.0);
+		} else{
+			return;
+		}
+		
 	}
 	
 	

@@ -1,10 +1,17 @@
 package fun.personalUse.dataModel;
 
+import java.util.Comparator;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-public class PlaylistBean {
+/**
+ * Data model for storing a set of FileBeans (songs) defined by a user
+ * @author Karottop
+ *
+ */
+public class PlaylistBean implements Comparator<PlaylistBean>, Comparable<PlaylistBean>{
 	/** 
 	 * user defined playlists are int values of 1, and the main
 	 * playlist has an int value of 0;
@@ -77,6 +84,30 @@ public class PlaylistBean {
 	 */
 	public int getPLAYLIST_TYPE() {
 		return PLAYLIST_TYPE;
+	}
+
+	/**
+	 * Compares another PlaylistBean based on it's name using the String.compareToIgnoreCase()
+	 */
+	@Override
+	public int compareTo(PlaylistBean bean) {
+
+		if(this.getName().compareToIgnoreCase(bean.getName()) > 0){
+			return 1;
+		}else if(this.getName().compareToIgnoreCase(bean.getName()) < 0){
+			return -1;
+		}else{
+			return 0;
+		}
+	}
+
+	/**
+	 * Compares two beans based on the overriden compareTo method from the comparab
+	 */
+	@Override
+	public int compare(PlaylistBean bean1, PlaylistBean bean2) {
+		// TODO Auto-generated method stub
+		return bean1.compareTo(bean2);
 	}
 	
 	

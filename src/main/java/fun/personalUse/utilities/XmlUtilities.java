@@ -11,7 +11,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import fun.personalUse.dataModel.FileBean;
@@ -54,8 +53,8 @@ public class XmlUtilities {
 	}
 
 	/**
-	 * Exports all mp3 files found in a directory to an XML at the specified
-	 * location including name of xml file
+	 * Exports all FileBeans passed in to an XML at the specified
+	 * location including name of xml file.
 	 * 
 	 * @param exportLocation
 	 */
@@ -94,8 +93,9 @@ public class XmlUtilities {
 	}
 
 	/**
-	 * Exports all PlaylistBeans containing mp3 files found in a directory to an
-	 * XML at the specified location that includes the name of xml file
+	 * Exports an array of PlaylistBeans containing all the users
+	 * playlist and their associated FileBeans. The XML file will
+	 * be saved in the directory passed in with the name playlists.xml
 	 * 
 	 * @param exportLocation
 	 */
@@ -132,52 +132,18 @@ public class XmlUtilities {
 			e.printStackTrace();
 		}
 	}
-
-	// /**
-	// * Imports songs from an XML and store them in an ArrayList. Location of
-	// XML
-	// * must be passed in.
-	// *
-	// * @param importLocation
-	// * @return
-	// * @throws FileNotFoundException
-	// */
-	// public static ArrayList<FileBean> importSongsFromXMLToArrayList(
-	// String importLocation) throws FileNotFoundException {
-	// // Reads xml file in from source and passes it to a BufferedInputStream
-	// FileInputStream xmlFile = new FileInputStream(importLocation);
-	// BufferedInputStream fileIn = new BufferedInputStream(xmlFile);
-	// XMLDecoder decoder = new XMLDecoder(fileIn);
-	//
-	// //Decoder decodes arraylist filled with FileBeans. Must cast accordingly
-	// ArrayList<FileBean> songList = (ArrayList<FileBean>) decoder
-	// .readObject();
-	// decoder.close();
-	// return songList;
-	// }
-
-	// /**
-	// * Import songs from an XML and stores them in an ObservableList. Location
-	// * of XML must be passed in
-	// *
-	// * @throws FileNotFoundException
-	// */
-	// public static ObservableList<FileBean>
-	// importSongsFromXMLToObservableList(
-	// String importLocation) throws FileNotFoundException {
-	//
-	// ArrayList<FileBean> songList =
-	// importSongsFromXMLToArrayList(importLocation);
-	//
-	// //Populate an observable list filled with DisplaySongBeans which have
-	// // methods to display contents in TableView
-	// ObservableList<FileBean> observableSongList = FXCollections
-	// .observableArrayList(songList);
-	// System.out.println(observableSongList.get(0).getSongName());
-	//
-	// return observableSongList;
-	// }
-
+	
+	/**
+	 * This method will import an XML file containing playlistBeans.
+	 * 
+	 * Should only be used when the XML file location is different
+	 * than the location passed into the object. The File  passed in
+	 * should be either contain the XML with an absolute path that is
+	 * retrievable
+	 * @param xml
+	 * @return
+	 * @throws FileNotFoundException
+	 */
 	public static ObservableList<PlaylistBean> importPlaylists(File xml)
 			throws FileNotFoundException {
 
@@ -204,7 +170,18 @@ public class XmlUtilities {
 
 		return tempPlaylists;
 	}
-
+	
+	/**
+	 * This method will import an XML file containing playlistBeans.
+	 * 
+	 * Should only be used when the XML file location is different
+	 * than the location passed in. The location should be either 
+	 * a relative or absolute path that also contains the name
+	 * of the XML file in the path
+	 * @param xmlLocation
+	 * @return
+	 * @throws FileNotFoundException
+	 */
 	public static ObservableList<PlaylistBean> importPlaylists(
 			String xmlLocation) throws FileNotFoundException {
 
@@ -240,7 +217,9 @@ public class XmlUtilities {
 	 * incompatibility, they are not changed.
 	 * 
 	 * This step is computationally expensive but should not need to be done
-	 * very often and it saves a ton of memory during normal use.
+	 * very often and it saves a ton of memory during normal use. Setting the 
+	 * Media and MediaPlayer objects to null make this run much faster and uses
+	 * less memory
 	 * 
 	 * @author Karottop
 	 *
@@ -254,32 +233,55 @@ public class XmlUtilities {
 
 		@Override
 		public void run() {
-			// Retrieve and set track song title
-			String songName = (String) fileBean.getMedia().getMetadata()
-					.get("title");
+			String songName = null;
+			String album = null;
+			String artist = null;
+			double duration = 0.0;
+			try{
+				// Retrieve track song title
+				songName = (String) fileBean.getMedia().getMetadata()
+						.get("title");
+				
+				// Retrieve Album title
+				album = (String) fileBean.getMedia().getMetadata()
+						.get("album");
+				
+				// Retrieve Artist title
+				artist = (String) fileBean.getMedia().getMetadata()
+						.get("artist");
+				
+				// Retrieve Track duration
+				duration = fileBean.getMedia().getDuration().toMillis() / 60_000.0;
+			}catch(NullPointerException e){
+				System.out.println(e.getMessage());
+			}
+			// Set track song title
+			
 			if (songName != null)
 				fileBean.setSongName(songName);
 
-			// Retrieve and set Album title
-			String album = (String) fileBean.getMedia().getMetadata()
-					.get("album");
+			// Set Album title
+			
 			if (album != null)
 				fileBean.setAlbum(album);
 
 			// Retrieve and set Artist title
-			String artist = (String) fileBean.getMedia().getMetadata()
-					.get("artist");
+			
 			if (artist != null)
 				fileBean.setArtist(artist);
 
-			// Retrieve and set Track duration
-			fileBean.setDuration(fileBean.getMedia().getDuration().toMillis() / 60_000.0);
+			// Set Track duration
+			fileBean.setDuration(duration);
 
 			fileBean.setMedia(null);
 			fileBean.setPlayer(null);
+			
+			// sets a variable telling whether or not the media player got hung
+//			fileBean.setMediaInitalized(true);
 
 		}
 
 	}
-
+	
+	
 }

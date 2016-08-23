@@ -11,13 +11,18 @@ import javafx.stage.Stage;
 public class AlbumTunesMain extends Application{
 
 	public void start(Stage stage) {
+		FXMLLoader loader = null;
 			Parent parent = null;
 			try {
-				parent = FXMLLoader.load(getClass().getResource("/resources/AlbumPlayerGUI.fxml"));
+				loader = new FXMLLoader(getClass().getResource("/resources/AlbumPlayerGUI.fxml"));
+				parent = (Parent)loader.load();
 				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			
+			AlbumTunesController controller = (AlbumTunesController)loader.getController();
+			
 			Scene scene = new Scene(parent);
 
 			// window title
@@ -25,13 +30,8 @@ public class AlbumTunesMain extends Application{
 			stage.setScene(scene);
 			stage.show();
 			
+			scene.getWindow().setOnCloseRequest(controller.saveChanges());
 		}
-	
-	@Override
-	public void stop(){
-	    System.out.println("Stage is closing");
-	    // Save file
-	}
 
 		/**
 		 * creates application in memory

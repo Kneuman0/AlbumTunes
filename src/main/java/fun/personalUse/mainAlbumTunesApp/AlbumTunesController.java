@@ -15,7 +15,7 @@ import fun.personalUse.dataModel.PlaylistBean;
 import fun.personalUse.utilities.XMLMediaPlayerHelper;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -41,79 +41,58 @@ import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
 import javafx.scene.media.Media;
-import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.WindowEvent;
 
 public class AlbumTunesController {
 
     @FXML
-    private Label userWarningLabel;
+    private Label 
+    	userWarningLabel,
+    	digLabel;
 
     @FXML
-    private Button pauseButton;
-
+    private Button 
+    	pauseButton,
+    	startButton,
+    	resumeButton,
+    	nextButton,
+    	restartAlbumButton,
+    	addPlaylistButton,
+    	addSongsToPlaylistButton,
+    	mineMP3sButton;
+    
     @FXML
-    private Button startButton;
+    private TextField 
+    	pathTextField,
+    	searchBox;
+    
+    @FXML
+    private AnchorPane 
+    	MediaPlayerAnchorPane,
+    	AlbumPlayerAnchorPane;
+    
+    @FXML
+    private TableColumn<FileBean, String> 
+    	durationCol,
+    	artistCol,
+    	songNameCol,
+    	albumCol;
 
     @FXML
     private TableView<FileBean> metaDataTable;
-
-    @FXML
-    private TableColumn<FileBean, String> durationCol;
-
-    @FXML
-    private TextField pathTextField;
-
-    @FXML
-    private Button resumeButton;
-
-    @FXML
-    private TableColumn<FileBean, String> artistCol;
-
-    @FXML
-    private AnchorPane MediaPlayerAnchorPane;
-
-    @FXML
-    private AnchorPane AlbumPlayerAnchorPane;
-
-    @FXML
-    private CheckBox shuffleBox;
-
-    @FXML
-    private TableColumn<FileBean, String> songNameCol;
-
-    @FXML
-    private Button nextButton;
-
-    @FXML
-    private Label digLabel;
     
     @FXML
     private TableView<PlaylistBean> playlistTable;
-    
+
     @FXML
     private TableColumn<PlaylistBean, String> playlistColumn;
-
-    @FXML
-    private Button restartAlbumButton;
-
-    @FXML
-    private TableColumn<FileBean, String> albumCol;
     
     @FXML
-    private Button addPlaylistButton;
-    
-    @FXML
-    private Button addSongsToPlaylistButton;
-    
-    @FXML
-    private TextField searchBox;
-    
-    @FXML
-    private Button mineMP3sButton;
-
+    private CheckBox shuffleBox;
+     
 
 	MediaPlayer currentPlayer;
 	ObservableList<FileBean> songsInAlbum;
@@ -123,11 +102,21 @@ public class AlbumTunesController {
 
 	public void initialize() {
 		setBackgroundImage();
+		// index used to keep track of next song
 		songNumber = 0;
+		
+		// loads all the playlist and songs from the XML file and 
+		// displays them in TableView objects
 		initalizeTableView();
 		songsInAlbum = metaDataTable.getItems();
 		songIndexes = new ArrayList<>();
+		
+		// Highligts the first index in the playlist tableview
 		Platform.runLater(new SelectIdexOnTable(playlistTable, 0));
+		
+		// Highligts the first index in the song tableview
+		Platform.runLater(new SelectIdexOnTable(metaDataTable, 0));
+		
 	}
 
 	public void startButtonListener() throws FileNotFoundException {
@@ -152,13 +141,6 @@ public class AlbumTunesController {
 		startAlbum(0);
 		songNumber = 0;
 	}
-	
-	@FXML
-	public void exitApplication(ActionEvent event) {
-		savePlaylists();
-		System.out.println("System is closing inside controller");
-		Platform.exit();
-	}
 		
 	public void addPlaylistButtonListener(){
 		TextInputDialog dialog = new TextInputDialog();
@@ -167,7 +149,6 @@ public class AlbumTunesController {
 		dialog.showAndWait();
 		
 		musicHandler.addPlaylist(dialog.getEditor().getText());
-		savePlaylists();
 	}
 	
 	public void addSongsToPlaylistButtonListener(){
@@ -175,7 +156,6 @@ public class AlbumTunesController {
 				metaDataTable.getSelectionModel().getSelectedItems();
 		PlaylistBean playlist = playlistTable.getSelectionModel().getSelectedItem();
 		playlist.getSongsInPlaylist().addAll(songsToBeAdded);
-		savePlaylists();
 	}
 	
 	public void displayPlaylistButtonListener(MouseEvent event){
@@ -187,7 +167,6 @@ public class AlbumTunesController {
 	}
 	
 	public void playSelectedSong(MouseEvent event){
-		System.out.println("insidePlay Selected");
 		 if (event.getClickCount() == 2) {
 			 songsInAlbum = metaDataTable.getItems();
 	         startAlbum(metaDataTable.getSelectionModel().getSelectedIndex());
@@ -196,10 +175,7 @@ public class AlbumTunesController {
 	}
 	
 	public void onTableSort(){
-		songsInAlbum = metaDataTable.getItems();
-		for(int i = 0; i < 10; i++){
-			System.out.println(songsInAlbum.get(i).getSongName());
-		}
+		
 	}
 	
 	public void onPlaylistSearch(){
@@ -214,6 +190,7 @@ public class AlbumTunesController {
 	}
 	
 	public void mineMP3sButtonListener(){
+		metaDataTable.refresh();
 		String title = "Please make a selection";
 		String header = "mp3 mining options...";
 		String content = "Do you want to import a single mp3\n"
@@ -252,11 +229,15 @@ public class AlbumTunesController {
 	}
 	
 	
-	
+	/**
+	 * Attempts to find existing xml files in two parent directories removed from the location
+	 * of this Media player's jar file.
+	 * 
+	 * If no xml's are found, the user will be prompted to locate a directory containing mp3s
+	 * so that the program can search for them.
+	 */
 	private void initalizeTableView(){
-		musicHandler = new XMLMediaPlayerHelper(
-//				"C:/Users/Karottop/git/AlbumTunes/SimplePlayer/infoDirectory"
-				);
+		musicHandler = new XMLMediaPlayerHelper();
 		songNameCol.setCellValueFactory(new PropertyValueFactory<FileBean, String>("songName"));
 		albumCol.setCellValueFactory(new PropertyValueFactory<FileBean, String>("album"));
 		artistCol.setCellValueFactory(new PropertyValueFactory<FileBean, String>("artist"));
@@ -272,6 +253,28 @@ public class AlbumTunesController {
 		metaDataTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 	}
 	
+	/**
+	 * The method will display an Alert box prompting the user to locate a 
+	 * song or directory that contains mp3s
+	 * 
+	 * The parameters passed is the text the user will see in the Alert box.
+	 * The Alert box will come with 3 new buttons: 1)Single mp3, 2)Folder of mp3s
+	 * and 3)Cancel. If the user selects the first button they will be
+	 * presented with a FileChooser display to select a song. If they press
+	 * the second button, the user will be prompted with a DirectoryChooser
+	 * display. The third button displays nothing and closes the Alert box.
+	 * 
+	 * The following outlines where each parameter will be displayed in the
+	 * Alert box
+	 * 
+	 * title: very top of the box in the same latitude as the close button.
+	 * header: inside the Alert box at the top.
+	 * content: in the middle of the box. This is the best place to explain
+	 * the button options to the user.
+	 * @param title
+	 * @param header
+	 * @param content
+	 */
 	private void findNewSongs(String title, String header, String content){
 		Alert importType = new Alert(AlertType.CONFIRMATION);
 		importType.setTitle(title);
@@ -315,22 +318,13 @@ public class AlbumTunesController {
 		}
 	}
 	
-	/**
-	 * Exports playlists to the infoDirectory using a new thread
-	 */
-	private void savePlaylists(){
-		Thread exportPlaylists = new Thread(new ExportPlaylistsToXML());
-		exportPlaylists.start();
-	}
-	
 	/*
 	 * initiates both the playing or replaying of the album
 	 */
 	private void startAlbum(int startIndex){
-		System.out.println("Songs in album" + songsInAlbum.size());
+		System.out.println("Songs in album " + songsInAlbum.size());
 		songNumber = 0;
 		songIndexes.removeAll(songIndexes);
-		songIndexes.add(startIndex);
 		
 		/*
 		 * populates and arraylist of indices that will be used
@@ -363,29 +357,34 @@ public class AlbumTunesController {
 		// index 0 will be removed each time a song is played
 		// so there will be no repeats
 		playASong(songsInAlbum.get(songIndexes.get(0)));
+//		songNumber++;
 
 	}
 
+	/**
+	 * increments songNumber by 1. 
+	 * Creates a new media player by using the FileBean passed in and
+	 * stores that media player in the currentPlayer variable.
+	 * 
+	 * @param songFile
+	 * @return
+	 */
 	private CurrentSongBean playASong(FileBean songFile) {
-		// increments index variable 'songNumber' each time playASong() is called
-		songNumber++;
 		
-		// %20 encodes spaces into the URL so that there are no illegal
-		// characters
-		// the '///' are necessary for a URL
 		
 		Media song = new Media(String.format("file:///%s", songFile.getUrl()));
 		currentPlayer = new MediaPlayer(song);
-		currentPlayer.setOnEndOfMedia(new EndOfMediaEventHandler());
-		currentPlayer.setOnStopped(new EndOfMediaEventHandler());
+		
+		EndOfMediaEventHandler stopEvent = new EndOfMediaEventHandler();
+		currentPlayer.setOnEndOfMedia(stopEvent);
+		currentPlayer.setOnStopped(stopEvent);
 		
 		/*
 		 * The media takes some time to load so you need to resister 
-		 * a listen with the MediaPlayer object to commence playing
+		 * a listener with the MediaPlayer object to commence playing
 		 * once the status is switched to READY
 		 */
 		currentPlayer.setOnReady(new OnMediaReadyEvent(songFile));
-		System.out.println("Just got created: " + currentPlayer);
 
 		CurrentSongBean currentSong = new CurrentSongBean(currentPlayer
 				.getTotalDuration().toMillis(), currentPlayer);
@@ -407,15 +406,8 @@ public class AlbumTunesController {
 		MediaPlayerAnchorPane.setBackground(background);
 	}
 	
-
-	public void updateLabelLater(final Label label, final String message) {
-		Platform.runLater(new Runnable() {
-			@Override
-			public void run() {
-				label.setGraphic(null);
-				label.setText(message);
-			}
-		});
+	protected SaveEverything saveChanges(){
+		return new SaveEverything();
 	}
 	
 	private class OnMediaReadyEvent implements Runnable{
@@ -427,17 +419,16 @@ public class AlbumTunesController {
 		
 		@Override
 		public void run() {
-			
+			// increments index variable 'songNumber' each time playASong() is called
+			songNumber++;
+			double duration = currentPlayer.getTotalDuration().toMillis() / 60_000.0;
 			String songInfo = String.format(
 					"Now Playing: %s\nArtist: %s\nAlbum: %s\nDuration: %.2f", 
 					songFile.getSongName(), songFile.getArtist(), songFile.getAlbum(),
-					currentPlayer.getTotalDuration().toMillis() / 60_000.0);
-			System.out.println("Just got called: " + currentPlayer);
-			updateLabelLater(userWarningLabel, songInfo);
-			
+					duration);
+			songFile.setDuration(duration);
+			Platform.runLater(new UpdateLabel(userWarningLabel, songInfo));
 			currentPlayer.play();
-			//removed current song index
-			songIndexes.remove(0);
 		}
 		
 	}
@@ -446,43 +437,15 @@ public class AlbumTunesController {
 
 		@Override
 		public void run() {
-					
+			
+			
 			if (songNumber < songsInAlbum.size()) {
-				
-				/*
-				 * While loop makes sure unsupported file types are skipped but does not
-				 * stop the flow of the album
-				 */
-				CurrentSongBean currentSong = null;
-				while(currentSong == null){
-					
-					FileBean songPath = null;
-					try {
-						System.out.println(songNumber);
-						int nextIndex = songIndexes.get(songNumber);
-						songPath = songsInAlbum.get(nextIndex);
-						currentSong = playASong(songPath);
+				int nextIndex = songIndexes.get(songNumber);
+				FileBean songPath = songsInAlbum.get(nextIndex);
+				playASong(songPath);
 						
-						updateLabelLater(userWarningLabel, String.format(
-								"Now Playing: %s\nDuration: %.2f", songPath.getSongName(),
-								currentSong.getDuration() / 60_000.0));
-						
-					} catch (MediaException e) {
-						System.out.println("Not a supported File:" + songPath);
-						
-						/*
-						 * If last file is not supported, end the while loop
-						 */
-					} catch (IndexOutOfBoundsException e){
-						updateLabelLater(userWarningLabel, "Album Finished");
-						currentSong = new CurrentSongBean(0.0, null);
-					}
-
-					
-				}
-
 			} else {
-				updateLabelLater(userWarningLabel, "Album Finished");
+				Platform.runLater(new UpdateLabel(userWarningLabel, "Album Finished"));
 			}
 
 		}
@@ -497,7 +460,7 @@ public class AlbumTunesController {
 		}
 		@Override
 		public void run() {
-			updateLabelLater(digLabel, "loading...");
+			Platform.runLater(new UpdateLabel(digLabel, "loading..."));
 //			XMLMediaPlayerHelper musicHandler = new XMLMediaPlayerHelper(
 //					"C:/Users/Karottop/git/AlbumTunes/SimplePlayer/infoDirectory/playlists.xml");
 			try {
@@ -511,10 +474,7 @@ public class AlbumTunesController {
 				e.printStackTrace();
 			}
 			ObservableList<FileBean> songArray = musicHandler.getMainPlaylist().getSongsInPlaylist();
-			updateLabelLater(digLabel, "complete: " + songArray.size());
-			musicHandler.exportPlaylistsToXML();
-			
-
+			Platform.runLater(new UpdateLabel(digLabel, "complete: " + songArray.size()));
 		}
 		
 	}
@@ -546,12 +506,12 @@ public class AlbumTunesController {
 						+ "Grab some coffee or something..**";
 				findNewSongs(title, header, content);
 				// need to handle file not found exception in new thread
-//				updateLabelLater(digLabel, "loading...");
+//				Platform.runLater(new UpdateLabel(digLabel, "loading..."));
 				tableView.setItems(musicHandler.getMainPlaylist().getSongsInPlaylist());
 				playlistTable.setItems(musicHandler.getPlaylists());
 				Platform.runLater(new SelectIdexOnTable(playlistTable, 0));
 				tableView.getSelectionModel().selectFirst();
-				
+								
 			}
 			
 		}
@@ -583,6 +543,38 @@ public class AlbumTunesController {
 			this.table.requestFocus();
 			this.table.getSelectionModel().selectFirst();
 			this.table.getFocusModel().focus(index);
+		}
+		
+	}
+	
+	private class UpdateLabel implements Runnable{
+
+		Label label;
+		String textToUpdate;
+		public UpdateLabel(Label label, String textToUpdate) {
+			this.label = label;
+			this.textToUpdate = textToUpdate;
+		}
+		
+		@Override
+		public void run() {
+			label.setText(textToUpdate);			
+		}
+		
+	}
+	
+	private class SaveEverything implements EventHandler<WindowEvent>{
+
+		@Override
+		public void handle(WindowEvent event) {
+			Alert alertBox = new Alert(AlertType.NONE);
+			alertBox.setTitle("Saving Content");
+			alertBox.setHeaderText("Hang tight while I save your preferences");
+			alertBox.setContentText("Saving...");
+			alertBox.show();
+			musicHandler.exportPlaylistsToXML();
+			event.consume();
+			Platform.exit();
 		}
 		
 	}
