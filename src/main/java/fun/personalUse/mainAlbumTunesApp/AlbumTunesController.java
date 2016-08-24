@@ -502,7 +502,9 @@ public class AlbumTunesController {
 		public void run() {
 			// increments index variable 'songNumber' each time playASong() is called
 			songNumber++;
-			double duration = currentPlayer.getTotalDuration().toMillis() / 60_000.0;
+			double duration = Double.parseDouble(XMLMediaPlayerHelper.convertDecimalMinutesToTimeMinutes(
+					currentPlayer.getTotalDuration().toMinutes()));
+			System.out.println(currentPlayer.getTotalDuration().toMinutes());
 			String songInfo = String.format(
 					"Now Playing: %s\nArtist: %s\nAlbum: %s\nDuration: %.2f", 
 					songFile.getSongName(), songFile.getArtist(), songFile.getAlbum(),
@@ -547,10 +549,6 @@ public class AlbumTunesController {
 			try {
 				musicHandler.findNewSongs(path);
 				
-				Platform.runLater(new DeleteThisClass());
-				
-				musicHandler.deleteIncapatableMediaTypes(musicHandler.getCurrentPlaylist());
-				
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -591,7 +589,6 @@ public class AlbumTunesController {
 						+ "Grab some coffee or something..**";
 				findNewSongs(title, header, content);
 				// need to handle file not found exception in new thread
-//				Platform.runLater(new UpdateLabel(digLabel, "loading..."));
 				tableView.setItems(musicHandler.getMainPlaylist().getSongsInPlaylist());
 				playlistTable.setItems(musicHandler.getPlaylists());
 				Platform.runLater(new SelectIdexOnTable(playlistTable, 0));
@@ -677,20 +674,5 @@ public class AlbumTunesController {
 		}
 		
 	}
-	
-	private class DeleteThisClass implements Runnable{
-
-		@Override
-		public void run() {
-			Alert alert = new Alert(AlertType.CONFIRMATION);
-			alert.setContentText("Delete incapatable songs?");
-			alert.show();
-			
-		}
-		
-	}
-	
-	
-	
 
 }

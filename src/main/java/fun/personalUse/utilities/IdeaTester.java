@@ -30,17 +30,17 @@ public class IdeaTester {
 //		write.writeObject(songArray);
 //		write.close();
 //		fileOut.println(songList.toString());
-		System.out.println(convert(1.99));
+		System.out.println("Converted: " + convert(3.14088586545));
 		
 
 	}
 	
 	private static String convert(double seconds){
-		DecimalFormat time = new DecimalFormat(".00");
+		DecimalFormat time = new DecimalFormat("00");
 		int fullMinutes = (int)seconds;
 		int secondsRemainder = (int)((seconds - fullMinutes) * 60);
-		System.out.println(secondsRemainder);
-		return String.format("%d.%d", fullMinutes, secondsRemainder);
+		System.out.println("Remaining Seconds" + time.format(secondsRemainder));
+		return String.format("%d.%s", fullMinutes, time.format(secondsRemainder));
 	}
 
 }

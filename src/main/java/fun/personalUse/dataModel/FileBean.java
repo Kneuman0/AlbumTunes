@@ -19,7 +19,7 @@ import javafx.scene.media.MediaPlayer;
  * @author Karottop
  *
  */
-public class FileBean implements Comparator<FileBean>, Comparable<FileBean>, ChangeListener<String>{
+public class FileBean implements Comparator<FileBean>, Comparable<FileBean>{
 	private File file;
 	private SimpleStringProperty location;
 	private SimpleStringProperty songName;
@@ -29,7 +29,6 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>, Cha
 	private Media media;
 	private MediaPlayer player;
 	private SimpleStringProperty  duration;
-	private SimpleBooleanProperty mediaInitalized;
 	
 	/**
 	 * inserts default or null values for every field. This constructor
@@ -52,8 +51,6 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>, Cha
 		 */
 		duration = new SimpleStringProperty("0.0");
 		
-		mediaInitalized = new SimpleBooleanProperty(true);
-		mediaInitalized.addListener(new OnBooleanChanged());
 //		duration.addListener(this);
 	}
 	
@@ -95,8 +92,6 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>, Cha
 		this.player = new MediaPlayer(media);
 //		tempPlayer.setOnReady(new OnMediaReadyEvent());
 		setDefaultSongNameAndArtist();
-		mediaInitalized = new SimpleBooleanProperty(true);
-		mediaInitalized.addListener(new OnBooleanChanged());
 	}
 	
 	public FileBean(String absolutePath) throws FileNotFoundException, UnsupportedEncodingException{
@@ -340,22 +335,6 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>, Cha
 		}
 	}
 	
-	
-	
-	/**
-	 * @return the mediaInitalized
-	 */
-	public boolean isMediaInitalized() {
-		return mediaInitalized.get();
-	}
-
-	/**
-	 * @param mediaInitalized the mediaInitalized to set
-	 */
-	public void setMediaInitalized(boolean mediaInitalized) {
-		this.mediaInitalized.set(mediaInitalized);
-	}
-
 	/**
 	 * Returns are string in the following format:
 	 * 
@@ -401,31 +380,6 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>, Cha
 	public int compare(FileBean bean1, FileBean bean2) {
 		// TODO Auto-generated method stub
 		return bean1.compareTo(bean2);
-	}
-
-	
-	@Override
-	public void changed(ObservableValue<? extends String> observable,
-			String oldValue, String newValue) {
-		if(Double.isInfinite(Double.parseDouble(newValue))){
-			setDuration(-1.0);
-		} else if(newValue == "0.0"){
-			setDuration(-1.0);
-		} else{
-			return;
-		}
-		
-	}
-	
-	private class OnBooleanChanged implements ChangeListener<Boolean>{
-
-		@Override
-		public void changed(ObservableValue<? extends Boolean> observable,
-				Boolean oldValue, Boolean newValue) {
-			System.out.println("Old: " + oldValue + "New: " + newValue);
-			
-		}
-		
 	}
 	
 	

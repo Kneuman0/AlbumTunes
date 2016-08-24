@@ -3,6 +3,7 @@ package fun.personalUse.utilities;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
+import java.text.DecimalFormat;
 
 import biz.personalAcademics.lib.pathClasses.PathGetter;
 import fun.personalUse.customExceptions.NoPlaylistsFoundException;
@@ -166,11 +167,7 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 			existingSongs.add(songBean);
 			
 			songBean.getPlayer().setOnReady(new OnMediaReadyEvent(songBean));
-			OnMediaPlayerStalled mediaStalledListener =
-					new OnMediaPlayerStalled(existingSongs, songBean);
-			songBean.getPlayer().setOnStalled(mediaStalledListener);
-			songBean.getPlayer().setOnHalted(mediaStalledListener);
-			songBean.getPlayer().setOnError(mediaStalledListener);
+			songBean.getPlayer().setOnError(new OnMediaPlayerStalled(existingSongs, songBean));
 //			
 			/*
 			 * if it's not a directory or mp3 file, then do nothing
@@ -325,34 +322,11 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 		return main;
 	}
 	
-	public void deleteIncapatableMediaTypes(ObservableList<FileBean> playlist){
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		int numberDeleted = 0;
-		for(int i = 0; i < playlist.size(); i++){
-			System.out.println(playlist.size());
-			FileBean song = playlist.get(i);
-			if(!song.isMediaInitalized()){
-				System.out.println("MediaPlayer not initalized for: " + playlist.get(i));
-				song.setMedia(null);
-				song.setPlayer(null);
-				playlist.remove(i);
-				numberDeleted++;
-			}else{
-				System.out.println("Media initalized for: " + playlist.get(i));
-			}
-		}
-		System.out.println("Halted: " + super.deleteToken + "Deleted: " + numberDeleted);
-	}
-	
 	public static String convertDecimalMinutesToTimeMinutes(double minutes){
-			int fullMinutes = (int)minutes;
-			int secondsRemainder = (int)((minutes - fullMinutes) * 60);
-			return String.format("%d.%d", fullMinutes, secondsRemainder);
+		DecimalFormat time = new DecimalFormat("00");
+		int fullMinutes = (int)minutes;
+		int secondsRemainder = (int)((minutes - fullMinutes) * 60);
+		return String.format("%d.%s", fullMinutes, time.format(secondsRemainder));
 	}
 	
 	
