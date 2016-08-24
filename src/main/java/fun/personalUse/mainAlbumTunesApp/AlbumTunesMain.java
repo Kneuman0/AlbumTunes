@@ -11,7 +11,7 @@ import javafx.stage.Stage;
 public class AlbumTunesMain extends Application{
 
 	public void start(Stage stage) {
-		FXMLLoader loader = null;
+			FXMLLoader loader = null;
 			Parent parent = null;
 			try {
 				loader = new FXMLLoader(getClass().getResource("/resources/AlbumPlayerGUI.fxml"));

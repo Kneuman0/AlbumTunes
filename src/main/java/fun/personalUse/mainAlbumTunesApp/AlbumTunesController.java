@@ -3,11 +3,17 @@ package fun.personalUse.mainAlbumTunesApp;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 
+import com.sun.media.jfxmedia.events.AudioSpectrumEvent;
+import com.sun.media.jfxmedia.events.AudioSpectrumListener;
+
+import fun.personalUse.controllers.MediaViewController;
 import fun.personalUse.customExceptions.NoPlaylistsFoundException;
 import fun.personalUse.dataModel.CurrentSongBean;
 import fun.personalUse.dataModel.FileBean;
@@ -17,11 +23,15 @@ import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -44,6 +54,8 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 public class AlbumTunesController {
@@ -51,7 +63,8 @@ public class AlbumTunesController {
     @FXML
     private Label 
     	userWarningLabel,
-    	digLabel;
+    	digLabel,
+    	currentSongTime;
 
     @FXML
     private Button 
@@ -62,7 +75,8 @@ public class AlbumTunesController {
     	restartAlbumButton,
     	addPlaylistButton,
     	addSongsToPlaylistButton,
-    	mineMP3sButton;
+    	mineMP3sButton,
+    	launchButton;
     
     @FXML
     private TextField 
@@ -92,6 +106,9 @@ public class AlbumTunesController {
     
     @FXML
     private CheckBox shuffleBox;
+    
+    @FXML
+    private ScrollBar songScrollBar;
      
 
 	MediaPlayer currentPlayer;
@@ -99,6 +116,7 @@ public class AlbumTunesController {
 	ArrayList<Integer> songIndexes;
 	private int songNumber;
 	XMLMediaPlayerHelper musicHandler;
+	DecimalFormat time;
 
 	public void initialize() {
 		setBackgroundImage();
@@ -116,6 +134,11 @@ public class AlbumTunesController {
 		
 		// Highligts the first index in the song tableview
 		Platform.runLater(new SelectIdexOnTable(metaDataTable, 0));
+		
+		songScrollBar.setMax(1.0);
+		songScrollBar.setMin(0.0);
+		songScrollBar.setValue(0.0);
+		time = new DecimalFormat(".00");
 		
 	}
 
@@ -228,6 +251,40 @@ public class AlbumTunesController {
 		}
 	}
 	
+	public void launchButtonListener(){
+		
+		Stage stage = new Stage();
+		FXMLLoader loader = null;
+		Parent parent = null;
+		try {
+			loader = new FXMLLoader(getClass().getResource("/resources/MediaPlayerGUI.fxml"));
+			parent = (Parent)loader.load();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		// controller for the application you are about to launch
+		MediaViewController controller = (MediaViewController)loader.getController();
+		
+		/*
+		 *  Pass in a reference to the controller that launched it (it's parent), hence 'this'.
+		 *  
+		 *  Once you have that stored, you can change values in this controller using the 
+		 *  other controller, or you can change values in the other controller using this one.
+		 *  You have complete freedom.
+		 */
+		controller.setParentController(this);
+		controller.setCurrentStage(stage);
+		stage.setOnCloseRequest(controller.getOnExit());
+		Scene scene = new Scene(parent);
+
+		// window title
+		stage.setTitle("Album Player");
+		stage.setScene(scene);
+		stage.show();
+	}
+	
 	
 	/**
 	 * Attempts to find existing xml files in two parent directories removed from the location
@@ -251,6 +308,10 @@ public class AlbumTunesController {
 		// need to make similar methods for playlist loading
 		
 		metaDataTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+	}
+	
+	public void testCommunication(String text){
+		Platform.runLater(new UpdateLabel(digLabel, text));
 	}
 	
 	/**
@@ -290,8 +351,10 @@ public class AlbumTunesController {
 		if(result.get() == singleMp3){
 			FileChooser fileChooser = new FileChooser();
 			fileChooser.setTitle("Location of mp3s");
-//			fileChooser.setSelectedExtensionFilter(
-//					new ExtensionFilter("Audio Files", "*.mp3"));
+			ArrayList<String> extensions = new ArrayList<>();
+			extensions.add("*.mp3");
+			fileChooser.getExtensionFilters().add(
+					new ExtensionFilter("Audio Files", getSupportedFileTypes()));
 			
 			File selectedFile = fileChooser.showOpenDialog(resumeButton.getScene().getWindow());
 			
@@ -323,6 +386,7 @@ public class AlbumTunesController {
 	 */
 	private void startAlbum(int startIndex){
 		System.out.println("Songs in album " + songsInAlbum.size());
+		System.out.println("Songs in Album " + musicHandler.getCurrentPlaylist().size());
 		songNumber = 0;
 		songIndexes.removeAll(songIndexes);
 		
@@ -378,6 +442,8 @@ public class AlbumTunesController {
 		EndOfMediaEventHandler stopEvent = new EndOfMediaEventHandler();
 		currentPlayer.setOnEndOfMedia(stopEvent);
 		currentPlayer.setOnStopped(stopEvent);
+		currentPlayer.setAudioSpectrumInterval(1.0);
+		currentPlayer.setAudioSpectrumListener(new OnMediaProgressUpdate());
 		
 		/*
 		 * The media takes some time to load so you need to resister 
@@ -405,6 +471,21 @@ public class AlbumTunesController {
 		AlbumPlayerAnchorPane.setBackground(background);
 		MediaPlayerAnchorPane.setBackground(background);
 	}
+	
+	private ArrayList<String> getSupportedFileTypes(){
+		ArrayList<String> extensions = new ArrayList<>();
+		extensions.add("*.MP4");
+		extensions.add("*.mp4");
+		extensions.add(".M4V");
+		extensions.add(".m4v");
+		extensions.add(".M4A");
+		extensions.add(".m4a");
+		extensions.add("*.mp3");
+		extensions.add("*.MP3");
+		return extensions;
+	}
+	
+
 	
 	protected SaveEverything saveChanges(){
 		return new SaveEverything();
@@ -465,6 +546,10 @@ public class AlbumTunesController {
 //					"C:/Users/Karottop/git/AlbumTunes/SimplePlayer/infoDirectory/playlists.xml");
 			try {
 				musicHandler.findNewSongs(path);
+				
+				Platform.runLater(new DeleteThisClass());
+				
+				musicHandler.deleteIncapatableMediaTypes(musicHandler.getCurrentPlaylist());
 				
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -578,6 +663,34 @@ public class AlbumTunesController {
 		}
 		
 	}
+	
+	private class OnMediaProgressUpdate implements javafx.scene.media.AudioSpectrumListener{
+
+		@Override
+		public void spectrumDataUpdate(double timestamp, double duration,
+				float[] magnitudes, float[] phases) {
+			double scrollBarValue = currentPlayer.getCurrentTime().toSeconds()/
+					currentPlayer.getTotalDuration().toSeconds();
+			songScrollBar.setValue(scrollBarValue);		
+			currentSongTime.setText(XMLMediaPlayerHelper.convertDecimalMinutesToTimeMinutes(
+					(currentPlayer.getCurrentTime().toMinutes())));
+		}
+		
+	}
+	
+	private class DeleteThisClass implements Runnable{
+
+		@Override
+		public void run() {
+			Alert alert = new Alert(AlertType.CONFIRMATION);
+			alert.setContentText("Delete incapatable songs?");
+			alert.show();
+			
+		}
+		
+	}
+	
+	
 	
 
 }

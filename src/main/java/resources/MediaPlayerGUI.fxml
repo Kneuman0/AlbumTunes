@@ -5,10 +5,26 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="415.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="430.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fun.personalUse.controllers.MediaViewController">
    <children>
       <MediaView fx:id="mediaView" fitHeight="400.0" fitWidth="600.0" />
-      <Label fx:id="label" layoutX="14.0" layoutY="392.0" prefHeight="17.0" prefWidth="253.0" text="Label" />
+      <MenuBar>
+        <menus>
+          <Menu mnemonicParsing="false" text="File">
+            <items>
+                  <MenuItem mnemonicParsing="false" onAction="#maximizeButtonListener" text="Maximize" />
+              <MenuItem mnemonicParsing="false" text="Close" />
+            </items>
+          </Menu>
+            <Menu mnemonicParsing="false" text="Actions">
+              <items>
+                <MenuItem mnemonicParsing="false" onAction="#resumeListener" text="Resume" />
+                  <MenuItem mnemonicParsing="false" onAction="#pauseListener" text="Pause" />
+                  <MenuItem mnemonicParsing="false" onAction="#stopListener" text="Stop" />
+                  <MenuItem mnemonicParsing="false" onAction="#findNewVideosListener" text="Find New Videos" />
+              </items>
+            </Menu>
+        </menus>
+      </MenuBar>
    </children>
 </AnchorPane>

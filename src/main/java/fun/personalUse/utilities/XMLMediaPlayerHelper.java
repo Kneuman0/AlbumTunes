@@ -5,13 +5,15 @@ import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 
 import biz.personalAcademics.lib.pathClasses.PathGetter;
-
 import fun.personalUse.customExceptions.NoPlaylistsFoundException;
 import fun.personalUse.dataModel.FileBean;
 import fun.personalUse.dataModel.PlaylistBean;
 import fun.personalUse.dataModel.PlaylistBeanMain;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.media.MediaPlayer.Status;
 
 /**
  * This class servers as a song and playlist manager for 
@@ -124,7 +126,7 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 		// add new songs to existing main playlist
 		digSongs(main.getSongsInPlaylist(), file);
 		
-//		deleteIncapatableMediaTypes();
+//		deleteIncapatableMediaTypes(main.getSongsInPlaylist());
 		
 		return main;
 	}
@@ -157,13 +159,19 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 			 * an mp3 file
 			 */
 		} else if (directory.getAbsolutePath().endsWith(".mp3") 
-//				|| directory.getAbsolutePath().endsWith(".m4a")
+				|| directory.getAbsolutePath().endsWith(".m4a")
 				) {
 			FileBean songBean = new FileBean(directory).getSerializableJavaBean();
-			songBean.getPlayer().setOnReady(new OnMediaReadyEvent(songBean));
+			
 			existingSongs.add(songBean);
 			
-
+			songBean.getPlayer().setOnReady(new OnMediaReadyEvent(songBean));
+			OnMediaPlayerStalled mediaStalledListener =
+					new OnMediaPlayerStalled(existingSongs, songBean);
+			songBean.getPlayer().setOnStalled(mediaStalledListener);
+			songBean.getPlayer().setOnHalted(mediaStalledListener);
+			songBean.getPlayer().setOnError(mediaStalledListener);
+//			
 			/*
 			 * if it's not a directory or mp3 file, then do nothing
 			 */
@@ -312,21 +320,39 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 		main.setName("All Music");
 		main.setSongsInPlaylist(observableSongs);
 		playlists.add(main);
+		setCurrentPlaylist(main.getSongsInPlaylist());
 		
 		return main;
 	}
 	
-	public void deleteIncapatableMediaTypes(){
-		ObservableList<FileBean> main = getMainPlaylist().getSongsInPlaylist();
-		for(int i = 0; i < main.size(); i++){
-			FileBean song = main.get(i);
-			if(!song.isMediaInitalized() || song.getDuration() > 0.0){
-				System.out.println("MediaPlayer not initalized for: " + main.get(i));
+	public void deleteIncapatableMediaTypes(ObservableList<FileBean> playlist){
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		int numberDeleted = 0;
+		for(int i = 0; i < playlist.size(); i++){
+			System.out.println(playlist.size());
+			FileBean song = playlist.get(i);
+			if(!song.isMediaInitalized()){
+				System.out.println("MediaPlayer not initalized for: " + playlist.get(i));
 				song.setMedia(null);
 				song.setPlayer(null);
-				main.remove(i);
+				playlist.remove(i);
+				numberDeleted++;
+			}else{
+				System.out.println("Media initalized for: " + playlist.get(i));
 			}
 		}
+		System.out.println("Halted: " + super.deleteToken + "Deleted: " + numberDeleted);
+	}
+	
+	public static String convertDecimalMinutesToTimeMinutes(double minutes){
+			int fullMinutes = (int)minutes;
+			int secondsRemainder = (int)((minutes - fullMinutes) * 60);
+			return String.format("%d.%d", fullMinutes, secondsRemainder);
 	}
 	
 	

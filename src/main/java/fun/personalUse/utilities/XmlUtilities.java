@@ -26,6 +26,7 @@ public class XmlUtilities {
 
 	protected String directoryPath;
 	protected File directory;
+	public int deleteToken = 0;
 
 	public XmlUtilities() {
 		directoryPath = null;
@@ -251,7 +252,7 @@ public class XmlUtilities {
 						.get("artist");
 				
 				// Retrieve Track duration
-				duration = fileBean.getMedia().getDuration().toMillis() / 60_000.0;
+				duration = fileBean.getMedia().getDuration().toMinutes();
 			}catch(NullPointerException e){
 				System.out.println(e.getMessage());
 			}
@@ -271,16 +272,34 @@ public class XmlUtilities {
 				fileBean.setArtist(artist);
 
 			// Set Track duration
-			fileBean.setDuration(duration);
+			fileBean.setDuration(Double.parseDouble(
+					XMLMediaPlayerHelper.convertDecimalMinutesToTimeMinutes(duration)));
 
-			fileBean.setMedia(null);
-			fileBean.setPlayer(null);
-			
-			// sets a variable telling whether or not the media player got hung
-//			fileBean.setMediaInitalized(true);
+//			fileBean.setMedia(null);
+//			fileBean.setPlayer(null);
 
 		}
 
+	}
+	
+	protected class OnMediaPlayerStalled implements Runnable{
+		
+		private ObservableList<FileBean> playlist;
+		private FileBean fileBean;
+		
+		public OnMediaPlayerStalled(ObservableList<FileBean> playlist, FileBean fileBean) {
+			this.playlist = playlist;
+			this.fileBean = fileBean;
+		}
+
+		@Override
+		public void run() {
+			int index = playlist.indexOf(this.fileBean);
+			fileBean.setPlayer(null);
+			fileBean.setMedia(null);
+			System.out.println("Removing: " + playlist.remove(index));
+		}
+		
 	}
 	
 	

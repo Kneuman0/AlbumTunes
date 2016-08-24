@@ -46,17 +46,17 @@
                               <DropShadow color="WHITE" spread="0.85" />
                            </effect>
                         </Label>
-                        <Button fx:id="pauseButton" layoutX="254.0" layoutY="76.0" mnemonicParsing="false" onAction="#pauseButtonListener" prefHeight="25.0" prefWidth="60.0" text="Pause" textFill="#ab0000">
+                        <Button fx:id="pauseButton" layoutX="111.0" layoutY="64.0" mnemonicParsing="false" onAction="#pauseButtonListener" prefHeight="25.0" prefWidth="60.0" text="Pause" textFill="#ab0000">
                            <effect>
                               <InnerShadow choke="0.4" color="WHITE" />
                            </effect>
                         </Button>
-                        <Button fx:id="resumeButton" layoutX="255.0" layoutY="105.0" mnemonicParsing="false" onAction="#resumeButtonListener" text="Resume" textFill="#0fb500">
+                        <Button fx:id="resumeButton" layoutX="112.0" layoutY="31.0" mnemonicParsing="false" onAction="#resumeButtonListener" text="Resume" textFill="#0fb500">
                            <effect>
                               <InnerShadow choke="0.4" color="WHITE" />
                            </effect>
                         </Button>
-                        <Button fx:id="nextButton" layoutX="255.0" layoutY="134.0" mnemonicParsing="false" onAction="#nextSongButtonListener" prefHeight="25.0" prefWidth="57.0" text="Next" textFill="#3c00ff">
+                        <Button fx:id="nextButton" layoutX="171.0" layoutY="31.0" mnemonicParsing="false" onAction="#nextSongButtonListener" prefHeight="25.0" prefWidth="57.0" text="Next" textFill="#3c00ff">
                            <effect>
                               <InnerShadow choke="0.4" color="WHITE" />
                            </effect>
@@ -66,12 +66,12 @@
                               <DropShadow color="WHITE" spread="0.85" />
                            </effect>
                         </CheckBox>
-                        <Button fx:id="restartAlbumButton" layoutX="255.0" layoutY="163.0" mnemonicParsing="false" onAction="#restartAlbumButtonListener" text="Restart Album" textFill="#1500ff">
+                        <Button fx:id="restartAlbumButton" layoutX="328.0" layoutY="52.0" mnemonicParsing="false" onAction="#restartAlbumButtonListener" text="Restart Album" textFill="#1500ff">
                            <effect>
                               <InnerShadow choke="0.8" color="#fffefe" />
                            </effect>
                         </Button>
-                        <Button fx:id="startButton" layoutX="254.0" layoutY="47.0" mnemonicParsing="false" onAction="#startButtonListener" prefHeight="17.0" prefWidth="61.0" text="Play" textFill="#00b21b">
+                        <Button fx:id="startButton" layoutX="379.0" layoutY="77.0" mnemonicParsing="false" onAction="#startButtonListener" prefHeight="17.0" prefWidth="61.0" text="Play" textFill="#00b21b">
                            <effect>
                               <InnerShadow choke="0.4" color="WHITE" />
                            </effect>
@@ -83,6 +83,8 @@
                               <DropShadow color="WHITE" height="18.04" radius="7.7775" spread="0.84" width="15.07" />
                            </effect>
                         </Label>
+                        <ScrollBar fx:id="songScrollBar" layoutX="184.0" layoutY="82.0" prefHeight="14.0" prefWidth="191.0" />
+                        <Label fx:id="currentSongTime" alignment="CENTER" layoutX="251.0" layoutY="64.0" prefHeight="17.0" prefWidth="54.0" />
                      </children>
                   </AnchorPane>
             </content>
@@ -104,6 +106,7 @@
                               <InnerShadow choke="0.4" color="WHITE" />
                            </effect>
                         </TextField>
+                        <Button fx:id="launchButton" layoutX="239.0" layoutY="80.0" mnemonicParsing="false" onAction="#launchButtonListener" text="Launch" />
                      </children>
                   </AnchorPane>
             </content>

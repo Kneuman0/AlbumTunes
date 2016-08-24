@@ -1,5 +1,7 @@
 package fun.personalUse.utilities;
 
+import java.text.DecimalFormat;
+
 //import java.beans.XMLEncoder;
 //import java.io.ByteArrayOutputStream;
 //import java.io.FileWriter;
@@ -28,7 +30,17 @@ public class IdeaTester {
 //		write.writeObject(songArray);
 //		write.close();
 //		fileOut.println(songList.toString());
+		System.out.println(convert(1.99));
+		
 
+	}
+	
+	private static String convert(double seconds){
+		DecimalFormat time = new DecimalFormat(".00");
+		int fullMinutes = (int)seconds;
+		int secondsRemainder = (int)((seconds - fullMinutes) * 60);
+		System.out.println(secondsRemainder);
+		return String.format("%d.%d", fullMinutes, secondsRemainder);
 	}
 
 }

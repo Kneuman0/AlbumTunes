@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Comparator;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -28,7 +29,7 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>, Cha
 	private Media media;
 	private MediaPlayer player;
 	private SimpleStringProperty  duration;
-	private boolean mediaInitalized;
+	private SimpleBooleanProperty mediaInitalized;
 	
 	/**
 	 * inserts default or null values for every field. This constructor
@@ -50,7 +51,9 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>, Cha
 		 *  null pointer exception to be thrown if not initialized
 		 */
 		duration = new SimpleStringProperty("0.0");
-		mediaInitalized = false;
+		
+		mediaInitalized = new SimpleBooleanProperty(true);
+		mediaInitalized.addListener(new OnBooleanChanged());
 //		duration.addListener(this);
 	}
 	
@@ -92,7 +95,12 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>, Cha
 		this.player = new MediaPlayer(media);
 //		tempPlayer.setOnReady(new OnMediaReadyEvent());
 		setDefaultSongNameAndArtist();
-		mediaInitalized = false;
+		mediaInitalized = new SimpleBooleanProperty(true);
+		mediaInitalized.addListener(new OnBooleanChanged());
+	}
+	
+	public FileBean(String absolutePath) throws FileNotFoundException, UnsupportedEncodingException{
+		this(new File(absolutePath));
 	}
 	
 	/**
@@ -338,14 +346,14 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>, Cha
 	 * @return the mediaInitalized
 	 */
 	public boolean isMediaInitalized() {
-		return mediaInitalized;
+		return mediaInitalized.get();
 	}
 
 	/**
 	 * @param mediaInitalized the mediaInitalized to set
 	 */
 	public void setMediaInitalized(boolean mediaInitalized) {
-		this.mediaInitalized = mediaInitalized;
+		this.mediaInitalized.set(mediaInitalized);
 	}
 
 	/**
@@ -356,6 +364,16 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>, Cha
 	@Override
 	public String toString(){
 		return String.format("%s, %s, %s", getSongName(), getArtist(), getAlbum());
+	}
+	
+	/**
+	 * uses FileBean.toSting().compareTo(this.toString())   to determine if the two
+	 * beans are equal
+	 */
+	@Override
+	public boolean equals(Object fileBean){
+		FileBean newBean = (FileBean)fileBean;
+		return newBean.toString().compareTo(this.toString()) == 0;
 	}
 
 
@@ -395,6 +413,17 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>, Cha
 			setDuration(-1.0);
 		} else{
 			return;
+		}
+		
+	}
+	
+	private class OnBooleanChanged implements ChangeListener<Boolean>{
+
+		@Override
+		public void changed(ObservableValue<? extends Boolean> observable,
+				Boolean oldValue, Boolean newValue) {
+			System.out.println("Old: " + oldValue + "New: " + newValue);
+			
 		}
 		
 	}
