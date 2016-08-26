@@ -10,9 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import fun.personalUse.controllers.MediaViewController;
 import fun.personalUse.customExceptions.NoPlaylistsFoundException;
@@ -125,23 +122,11 @@ public class AlbumTunesController {
 	private int songNumber;
 	XMLMediaPlayerHelper musicHandler;
 	DecimalFormat time;
-	Random randomIndex;
-	int startIndex;
-	
-	/**
-	 * The MediaPlayer has a bug where it will call the OnMediaReadyEvent
-	 * twice but not consistently. This atomic boolean is used to 
-	 * ignore the second call of this listener and avoid a second
-	 * incrementing of the AtomicInteger 'songNumber'
-	 */
-	AtomicBoolean playHasBeenExecuted;
 
 	public void initialize() {
 		setBackgroundImage();
 		// index used to keep track of next song
 		songNumber = 0;
-		startIndex = 0;
-		playHasBeenExecuted = new AtomicBoolean(false);
 		
 		// loads all the playlist and songs from the XML file and 
 		// displays them in TableView objects
@@ -407,7 +392,7 @@ public class AlbumTunesController {
 		}
 	}
 	
-	private void restartPlaySelectedAndShuffle(){
+	private void restartPlaySelectedAndShuffle(int startIndex){
 		songNumber = 0;
 		/*
 		 * Add all indexes of current TableView of songs except the current song
@@ -461,7 +446,7 @@ public class AlbumTunesController {
 			// shuffle all songs in playlist but still play selected song
 			if(playSelectedSong){
 				
-				restartPlaySelectedAndShuffle();
+				restartPlaySelectedAndShuffle(startIndex);
 			/*
 			 *  if selected song is not to be played, start with the songs at the
 			 *  first shuffled index 

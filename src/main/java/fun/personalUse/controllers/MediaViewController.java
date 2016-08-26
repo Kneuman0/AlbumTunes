@@ -24,7 +24,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.stage.FileChooser;
@@ -102,6 +101,10 @@ public class MediaViewController {
 	 */
 	public void setParentController(AlbumTunesController parentController){
 		this.parentCont = parentController;
+	}
+	
+	public AlbumTunesController getParentController(){
+		return parentCont;
 	}
 	
 	private void inializeScrollBar(){

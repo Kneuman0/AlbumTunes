@@ -12,9 +12,6 @@ import fun.personalUse.dataModel.PlaylistBean;
 import fun.personalUse.dataModel.PlaylistBeanMain;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.media.MediaPlayer.Status;
 
 /**
  * This class servers as a song and playlist manager for 
