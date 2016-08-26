@@ -63,27 +63,21 @@ public class AlbumTunesController {
 
     @FXML
     private Label 
-    	userWarningLabel,
+    	mediaDescLeft,
+    	mediaDescRight,
     	digLabel,
     	currentSongTime;
 
     @FXML
     private Button 
-    	pauseButton,
-    	startButton,
-    	resumeButton,
+    	playBackButton,
     	nextButton,
     	restartAlbumButton,
     	addPlaylistButton,
     	addSongsToPlaylistButton,
     	mineMP3sButton,
     	launchButton;
-    
-    @FXML
-    private TextField 
-    	pathTextField,
-    	searchBox;
-    
+        
     @FXML
     private AnchorPane 
     	MediaPlayerAnchorPane,
@@ -95,6 +89,9 @@ public class AlbumTunesController {
     	artistCol,
     	songNameCol,
     	albumCol;
+    
+    @FXML
+    private TextField searchBox;
 
     @FXML
     private TableView<FileBean> metaDataTable;
@@ -145,22 +142,46 @@ public class AlbumTunesController {
 		time = new DecimalFormat(".00");
 		
 	}
-
-	public void startButtonListener() throws FileNotFoundException {
-		songsInAlbum = metaDataTable.getItems();
-		startAlbum(metaDataTable.getSelectionModel().getSelectedIndex(), true);
+	
+	public void executePlayback(){
+		System.out.println("|" + playBackButton.getText() + "|");
+		/*
+		 * Media player just opened and nothing has been played yet or album has finished
+		 */
+		if(playBackButton.getText().equals("Play") && currentPlayer == null){
+			playBackButton.setText("Pause");
+			songsInAlbum = metaDataTable.getItems();
+			startAlbum(metaDataTable.getSelectionModel().getSelectedIndex(), true);
+		/*
+		 * 	Song is pause, user wants to resume play
+		 */
+		} else if(playBackButton.getText().equals("Play") && currentPlayer != null){
+			playBackButton.setText("Pause");
+			currentPlayer.play();
+		
+		}else if(playBackButton.getText().equals("Pause")){
+		
+			playBackButton.setText("Play");
+			currentPlayer.pause();
+		}
 	}
 
 	public void nextSongButtonListener() {
 		currentPlayer.stop();
 	}
-
-	public void resumeButtonListener() {
-		currentPlayer.play();
-	}
-
-	public void pauseButtonListener() {
-		currentPlayer.pause();
+	
+	public void backButtonListener(){
+		System.out.println("|" + currentSongTime.getText() + "|");
+		if(!currentSongTime.getText().equals("0.00")){
+			songScrollBar.setValue(0.0);
+		}else if(currentSongTime.getText().equals("0.00") && currentPlayer != null
+				&& songNumber >= 2){
+			songNumber -= 2;
+			currentPlayer.stop();
+		}else{
+			// do nothing because player has not been started
+			return;
+		}
 	}
 	
 	public void restartAlbumButtonListener(){
@@ -195,6 +216,7 @@ public class AlbumTunesController {
 	
 	public void playSelectedSong(MouseEvent event){
 		 if (event.getClickCount() == 2) {
+			 playBackButton.setText("Pause");
 			 startAlbum(metaDataTable.getSelectionModel().getSelectedIndex(), true);
 	            
 	        }
@@ -359,7 +381,7 @@ public class AlbumTunesController {
 			fileChooser.getExtensionFilters().add(
 					new ExtensionFilter("Audio Files", getSupportedFileTypes()));
 			
-			File selectedFile = fileChooser.showOpenDialog(resumeButton.getScene().getWindow());
+			File selectedFile = fileChooser.showOpenDialog(playBackButton.getScene().getWindow());
 			
 			if(selectedFile == null){
 				return;
@@ -371,7 +393,7 @@ public class AlbumTunesController {
 			DirectoryChooser fileChooser = new DirectoryChooser();
 			fileChooser.setTitle("Location to mine for mp3s");
 			
-			File selectedFile = fileChooser.showDialog(resumeButton.getScene().getWindow());
+			File selectedFile = fileChooser.showDialog(playBackButton.getScene().getWindow());
 			
 			if(selectedFile == null){
 				return;
@@ -433,7 +455,8 @@ public class AlbumTunesController {
 	private void startAlbum(int startIndex, boolean playSelectedSong){
 						
 		if (shuffleBox.isSelected()) {
-			Platform.runLater(new UpdateLabel(userWarningLabel, "Shuffling..."));
+			Platform.runLater(new UpdateLabel(mediaDescLeft, "Shuffling..."));
+			Platform.runLater(new UpdateLabel(mediaDescRight, "Shuffling..."));
 			// de-reference old index list and make a new list
 			songIndexes = null;
 			songIndexes = new ArrayList<>();
@@ -561,13 +584,14 @@ public class AlbumTunesController {
 		@Override
 		public void run() {
 			
-			String tempDesc = String.format(
-					"Now Playing: %s\nArtist: %s\nAlbum: %s\nDuration: %.2f", 
-					songFile.getSongName(), songFile.getArtist(), songFile.getAlbum(),
-					songFile.getDuration());
+			String tempDescLeft = String.format(
+					"Now Playing: %s\nArtist: %s", songFile.getSongName(), songFile.getArtist());
+			String tempDescRight = String.format(
+					"Album: %s\nDuration: %.2f", songFile.getAlbum(), songFile.getDuration());
 						
 			songFile.setDuration(songFile.getDuration());
-			Platform.runLater(new UpdateLabel(userWarningLabel, tempDesc));
+			Platform.runLater(new UpdateLabel(mediaDescLeft, tempDescLeft));
+			Platform.runLater(new UpdateLabel(mediaDescRight, tempDescRight));
 			Platform.runLater(new SelectIndexOnTable(metaDataTable, metaDataTable.getItems().indexOf(songFile)));
 			currentPlayer.play();
 			// increments index variable 'songNumber' each time playASong() is called
@@ -595,7 +619,8 @@ public class AlbumTunesController {
 				playASong(nextSong);
 				
 			}else{
-				Platform.runLater(new UpdateLabel(userWarningLabel, "Album Finished"));
+				Platform.runLater(new UpdateLabel(mediaDescLeft, "Album Finished"));
+				Platform.runLater(new UpdateLabel(mediaDescRight, "Album Finished"));
 			}
 
 		}
