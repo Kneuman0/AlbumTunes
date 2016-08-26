@@ -10,7 +10,7 @@
    <children>
       <TabPane prefHeight="729.0" prefWidth="800.0" tabClosingPolicy="UNAVAILABLE">
         <tabs>
-          <Tab text="Media Player">
+          <Tab text="Songs">
             <content>
               <AnchorPane fx:id="MediaPlayerAnchorPane" minHeight="0.0" minWidth="0.0" prefHeight="709.0" prefWidth="800.0">
                      <children>
@@ -101,7 +101,7 @@
                   </AnchorPane>
             </content>
           </Tab>
-          <Tab text="Album Player">
+          <Tab text="Video">
             <content>
               <AnchorPane fx:id="AlbumPlayerAnchorPane" minHeight="0.0" minWidth="0.0" prefHeight="371.0" prefWidth="695.0">
                      <children>
