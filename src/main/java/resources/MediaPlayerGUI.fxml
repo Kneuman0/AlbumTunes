@@ -26,5 +26,7 @@
             </Menu>
         </menus>
       </MenuBar>
+      <ScrollBar fx:id="videoScrollBar" layoutY="416.0" prefHeight="14.0" prefWidth="541.0" AnchorPane.bottomAnchor="0.0" />
+      <Label fx:id="currentMediaTime" layoutX="544.0" layoutY="413.0" prefHeight="17.0" prefWidth="55.0" AnchorPane.bottomAnchor="0.0" />
    </children>
 </AnchorPane>

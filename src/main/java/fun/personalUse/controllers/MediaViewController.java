@@ -3,21 +3,25 @@ package fun.personalUse.controllers;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Optional;
 
 import fun.personalUse.dataModel.FileBean;
 import fun.personalUse.mainAlbumTunesApp.AlbumTunesController;
+import fun.personalUse.utilities.XMLMediaPlayerHelper;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.media.Media;
@@ -27,18 +31,25 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Duration;
 
 public class MediaViewController {
 	
     @FXML
     private MediaView mediaView;
     
+    @FXML
+    private ScrollBar videoScrollBar;
+    
+    @FXML
+    private Label currentMediaTime;
+    
     private AlbumTunesController parentCont;    
     private Stage currentStage;
     private MediaPlayer currentPlayer;
 	
 	public void initialize(){
-		
+		inializeScrollBar();
 	}
 	
 	public void findNewVideosListener(){
@@ -91,6 +102,13 @@ public class MediaViewController {
 	 */
 	public void setParentController(AlbumTunesController parentController){
 		this.parentCont = parentController;
+	}
+	
+	private void inializeScrollBar(){
+		videoScrollBar.setMin(0.0);
+		videoScrollBar.setMax(1.0);
+		videoScrollBar.setValue(0.0);
+		videoScrollBar.valueProperty().addListener(new OnScrollBarValueChange());
 	}
 	
 	private class ExitListener implements EventHandler<WindowEvent>{
@@ -189,6 +207,7 @@ public class MediaViewController {
 	
 	private void playAVideo(FileBean fileBean){
 		currentPlayer = fileBean.getPlayer();
+		currentPlayer.setAudioSpectrumListener(new OnMediaProgressUpdate());
 		currentPlayer.setAutoPlay(true);
 		mediaView.setMediaPlayer(currentPlayer);
 	}
@@ -204,5 +223,53 @@ public class MediaViewController {
 		return extensions;
 	}
 	
+	private class OnScrollBarValueChange implements ChangeListener<Number>{
 
+		@Override
+		public void changed(ObservableValue<? extends Number> observable,
+				Number oldValue, Number newValue) {
+			
+			double ratio = currentPlayer.getCurrentTime().toMinutes()/
+					currentPlayer.getCycleDuration().toMinutes();
+			
+			if(!String.format("%.5f", newValue.doubleValue()).equals(String.format("%.5f", ratio))){
+				
+				// pause media player so it doesn't trigger an
+				// event with the equalizer property thing.. may not be necessary
+				currentPlayer.pause();
+				
+				// get time relative to scroll bar in milliseconds
+				double minutes = currentPlayer.getCycleDuration().toMillis() * newValue.doubleValue();
+				
+				// convert to minutes and display above scroll bar
+				String time = XMLMediaPlayerHelper.convertDecimalMinutesToTimeMinutes(minutes/60000.0);
+				currentMediaTime.setText(time);
+				
+				// seek to the new found song location and play it
+				Duration duration = new Duration(minutes);
+				currentPlayer.seek(duration);
+				currentPlayer.play();
+			}
+			
+			
+		}
+	
+	}
+	
+	private class OnMediaProgressUpdate implements javafx.scene.media.AudioSpectrumListener{
+
+		@Override
+		public void spectrumDataUpdate(double timestamp, double duration,
+				float[] magnitudes, float[] phases) {
+			double scrollBarValue = currentPlayer.getCurrentTime().toSeconds()/
+					currentPlayer.getTotalDuration().toSeconds();
+			videoScrollBar.setValue(scrollBarValue);		
+			currentMediaTime.setText(XMLMediaPlayerHelper.convertDecimalMinutesToTimeMinutes(
+					(currentPlayer.getCurrentTime().toMinutes())));
+		}
+		
+	}
 }
+	
+
+

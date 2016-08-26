@@ -1,6 +1,7 @@
 package fun.personalUse.utilities;
 
 import java.text.DecimalFormat;
+import java.util.Random;
 
 //import java.beans.XMLEncoder;
 //import java.io.ByteArrayOutputStream;
@@ -30,7 +31,14 @@ public class IdeaTester {
 //		write.writeObject(songArray);
 //		write.close();
 //		fileOut.println(songList.toString());
-		System.out.println("Converted: " + convert(3.14088586545));
+//		System.out.println("Converted: " + convert(3.14088586545));
+		
+		Random random = new Random();
+		
+		
+		for(int i = 0; i < 10; i++){
+			System.out.println(random.nextInt(1));
+		}
 		
 
 	}

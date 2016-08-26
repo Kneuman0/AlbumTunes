@@ -8,10 +8,11 @@ import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
-
-import com.sun.media.jfxmedia.events.AudioSpectrumEvent;
-import com.sun.media.jfxmedia.events.AudioSpectrumListener;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import fun.personalUse.controllers.MediaViewController;
 import fun.personalUse.customExceptions.NoPlaylistsFoundException;
@@ -20,6 +21,8 @@ import fun.personalUse.dataModel.FileBean;
 import fun.personalUse.dataModel.PlaylistBean;
 import fun.personalUse.utilities.XMLMediaPlayerHelper;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -57,6 +60,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Duration;
 
 public class AlbumTunesController {
 
@@ -112,16 +116,32 @@ public class AlbumTunesController {
      
 
 	MediaPlayer currentPlayer;
-	ObservableList<FileBean> songsInAlbum;
+	List<FileBean> songsInAlbum;
 	ArrayList<Integer> songIndexes;
+	
+	/*
+	 * is incremented each time a song is played
+	 */
 	private int songNumber;
 	XMLMediaPlayerHelper musicHandler;
 	DecimalFormat time;
+	Random randomIndex;
+	int startIndex;
+	
+	/**
+	 * The MediaPlayer has a bug where it will call the OnMediaReadyEvent
+	 * twice but not consistently. This atomic boolean is used to 
+	 * ignore the second call of this listener and avoid a second
+	 * incrementing of the AtomicInteger 'songNumber'
+	 */
+	AtomicBoolean playHasBeenExecuted;
 
 	public void initialize() {
 		setBackgroundImage();
 		// index used to keep track of next song
 		songNumber = 0;
+		startIndex = 0;
+		playHasBeenExecuted = new AtomicBoolean(false);
 		
 		// loads all the playlist and songs from the XML file and 
 		// displays them in TableView objects
@@ -130,21 +150,20 @@ public class AlbumTunesController {
 		songIndexes = new ArrayList<>();
 		
 		// Highligts the first index in the playlist tableview
-		Platform.runLater(new SelectIdexOnTable(playlistTable, 0));
+		Platform.runLater(new SelectIndexOnTable(playlistTable, 0));
 		
 		// Highligts the first index in the song tableview
-		Platform.runLater(new SelectIdexOnTable(metaDataTable, 0));
+		Platform.runLater(new SelectIndexOnTable(metaDataTable, 0));
 		
-		songScrollBar.setMax(1.0);
-		songScrollBar.setMin(0.0);
-		songScrollBar.setValue(0.0);
+		initalizeScrollBar();
+		
 		time = new DecimalFormat(".00");
 		
 	}
 
 	public void startButtonListener() throws FileNotFoundException {
 		songsInAlbum = metaDataTable.getItems();
-		startAlbum(metaDataTable.getSelectionModel().getSelectedIndex());
+		startAlbum(metaDataTable.getSelectionModel().getSelectedIndex(), true);
 	}
 
 	public void nextSongButtonListener() {
@@ -161,7 +180,7 @@ public class AlbumTunesController {
 	
 	public void restartAlbumButtonListener(){
 		// restarts the album from the first index
-		startAlbum(0);
+		startAlbum(0, true);
 		songNumber = 0;
 	}
 		
@@ -191,8 +210,7 @@ public class AlbumTunesController {
 	
 	public void playSelectedSong(MouseEvent event){
 		 if (event.getClickCount() == 2) {
-			 songsInAlbum = metaDataTable.getItems();
-	         startAlbum(metaDataTable.getSelectionModel().getSelectedIndex());
+			 startAlbum(metaDataTable.getSelectionModel().getSelectedIndex(), true);
 	            
 	        }
 	}
@@ -310,8 +328,8 @@ public class AlbumTunesController {
 		metaDataTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 	}
 	
-	public void testCommunication(String text){
-		Platform.runLater(new UpdateLabel(digLabel, text));
+	public void onShuffleSelected(){
+		startAlbum(metaDataTable.getSelectionModel().getSelectedIndex(), false);
 	}
 	
 	/**
@@ -381,52 +399,95 @@ public class AlbumTunesController {
 		}
 	}
 	
+	private void startNextPlayer(FileBean selectedSong){
+		if(currentPlayer == null){
+			playASong(selectedSong);
+		}else{
+			currentPlayer.stop();
+		}
+	}
+	
 	/*
 	 * initiates both the playing or replaying of the album
 	 */
-	private void startAlbum(int startIndex){
-		System.out.println("Songs in album " + songsInAlbum.size());
-		System.out.println("Songs in Album " + musicHandler.getCurrentPlaylist().size());
-		songNumber = 0;
-		songIndexes.removeAll(songIndexes);
-		
-		/*
-		 * populates and arraylist of indices that will be used
-		 * to choose songs to play. Indices start where user selected the song
-		 */
-		for(int i = startIndex; i < songsInAlbum.size(); i++){
-			songIndexes.add(i);
-		}
-		
-		/*
-		 * Stops playing the current playing if one exists
-		 */
-		if(currentPlayer != null){
-			currentPlayer.stop();
-			currentPlayer = null;
-		}
-		
-		/*
-		 *  Assigns the current directory path so that the album can
-		 *  only be played from the restart album button
-		 */
-//		albumDirectoryPath = pathTextField.getText();
-		
-		
-//		songsInAlbum = gatherAllMediaFiles();
+	private void startAlbum(int startIndex, boolean playSelectedSong){
+						
 		if (shuffleBox.isSelected()) {
-			Collections.shuffle(songIndexes);
+			Platform.runLater(new UpdateLabel(userWarningLabel, "Shuffling..."));
+			// de-reference old index list and make a new list
+			songIndexes = null;
+			songIndexes = new ArrayList<>();
+			
+			// Start songNumber at the beginning
+			
+			// get all songs in TableView
+			songsInAlbum = metaDataTable.getItems();
+			
+			// shuffle all songs in playlist but still play selected song
+			if(playSelectedSong){
+				songNumber = 0;
+				/*
+				 * Add all indexes of current TableView of songs except the current song
+				 */
+				for(int i = 0; i < songsInAlbum.size(); i++){
+					if(i != startIndex){
+						songIndexes.add(new Integer(i));
+					}
+					
+				}
+				
+				// shuffle all indexes. Better than using Random because there will be no repeats
+				Collections.shuffle(songIndexes);
+				// play selected song
+				songIndexes.add(0, new Integer(startIndex));
+				
+				FileBean selectedSong = metaDataTable.getItems().get(songIndexes.get(0));
+				startNextPlayer(selectedSong);
+				
+			/*
+			 *  if selected song is not to be played, start with the songs at the
+			 *  first shuffled index 
+			 */
+			}else{
+				// add all indexes
+				for(int i = 0; i < songsInAlbum.size(); i++){
+					songIndexes.add(new Integer(i));					
+				}
+				
+				// shuffle all indexes. Better than using Random because there will be no repeats
+				Collections.shuffle(songIndexes);
+				// Play first song in shuffled indexes
+				FileBean randomSong = metaDataTable.getItems().get(songIndexes.get(0));
+				startNextPlayer(randomSong);
+				
+			}
+		// Shuffle box not selected	
+		}else{
+
+			FileBean selectedSong = metaDataTable.getSelectionModel().getSelectedItem();
+			
+			// Start songNumber where selected song is
+			this.songNumber = startIndex;
+			
+			/*
+			 *  get a sublist to iterate through sequentially from the place of selection through
+			 *  the end of the playlist
+			 */
+			songsInAlbum = metaDataTable.getItems().subList(startIndex, metaDataTable.getItems().size());
+			
+			if(playSelectedSong){
+				// start with selected song
+				startNextPlayer(selectedSong);
+				
+			}else{
+				// wait for song to end and start unshuffled list with the next song
+			}
 		}
 		
-		// index 0 will be removed each time a song is played
-		// so there will be no repeats
-		playASong(songsInAlbum.get(songIndexes.get(0)));
-//		songNumber++;
 
 	}
 
 	/**
-	 * increments songNumber by 1. 
 	 * Creates a new media player by using the FileBean passed in and
 	 * stores that media player in the currentPlayer variable.
 	 * 
@@ -435,13 +496,12 @@ public class AlbumTunesController {
 	 */
 	private CurrentSongBean playASong(FileBean songFile) {
 		
-		
 		Media song = new Media(String.format("file:///%s", songFile.getUrl()));
 		currentPlayer = new MediaPlayer(song);
 		
-		EndOfMediaEventHandler stopEvent = new EndOfMediaEventHandler();
-		currentPlayer.setOnEndOfMedia(stopEvent);
-		currentPlayer.setOnStopped(stopEvent);
+		EndOfMediaEventHandler endOfMediaHandler = new EndOfMediaEventHandler();
+		currentPlayer.setOnEndOfMedia(endOfMediaHandler);
+		currentPlayer.setOnStopped(endOfMediaHandler);
 		currentPlayer.setAudioSpectrumInterval(1.0);
 		currentPlayer.setAudioSpectrumListener(new OnMediaProgressUpdate());
 		
@@ -454,7 +514,7 @@ public class AlbumTunesController {
 
 		CurrentSongBean currentSong = new CurrentSongBean(currentPlayer
 				.getTotalDuration().toMillis(), currentPlayer);
-
+		
 		return currentSong;
 	}
 
@@ -485,6 +545,13 @@ public class AlbumTunesController {
 		return extensions;
 	}
 	
+	private void initalizeScrollBar(){
+		songScrollBar.setMax(1.0);
+		songScrollBar.setMin(0.0);
+		songScrollBar.setValue(0.0);
+		songScrollBar.valueProperty().addListener(new OnScrollBarValueChange());
+	}
+	
 
 	
 	protected SaveEverything saveChanges(){
@@ -500,18 +567,18 @@ public class AlbumTunesController {
 		
 		@Override
 		public void run() {
-			// increments index variable 'songNumber' each time playASong() is called
-			songNumber++;
-			double duration = Double.parseDouble(XMLMediaPlayerHelper.convertDecimalMinutesToTimeMinutes(
-					currentPlayer.getTotalDuration().toMinutes()));
-			System.out.println(currentPlayer.getTotalDuration().toMinutes());
-			String songInfo = String.format(
+			
+			String tempDesc = String.format(
 					"Now Playing: %s\nArtist: %s\nAlbum: %s\nDuration: %.2f", 
 					songFile.getSongName(), songFile.getArtist(), songFile.getAlbum(),
-					duration);
-			songFile.setDuration(duration);
-			Platform.runLater(new UpdateLabel(userWarningLabel, songInfo));
+					songFile.getDuration());
+						
+			songFile.setDuration(songFile.getDuration());
+			Platform.runLater(new UpdateLabel(userWarningLabel, tempDesc));
+			Platform.runLater(new SelectIndexOnTable(metaDataTable, metaDataTable.getItems().indexOf(songFile)));
 			currentPlayer.play();
+			// increments index variable 'songNumber' each time playASong() is called
+			songNumber++;
 		}
 		
 	}
@@ -521,13 +588,20 @@ public class AlbumTunesController {
 		@Override
 		public void run() {
 			
+			// if shuffle is on
+			if(shuffleBox.isSelected() && songNumber < songsInAlbum.size()){
+				
+				int nextRandomIndex = songIndexes.get(songNumber);
+				FileBean nextSong = metaDataTable.getItems().get(nextRandomIndex);
+				playASong(nextSong);
 			
-			if (songNumber < songsInAlbum.size()) {
-				int nextIndex = songIndexes.get(songNumber);
-				FileBean songPath = songsInAlbum.get(nextIndex);
-				playASong(songPath);
-						
-			} else {
+			// if shuffle is off
+			}else if(!shuffleBox.isSelected() && songNumber < songsInAlbum.size()){
+				
+				FileBean nextSong = metaDataTable.getItems().get(songNumber);
+				playASong(nextSong);
+				
+			}else{
 				Platform.runLater(new UpdateLabel(userWarningLabel, "Album Finished"));
 			}
 
@@ -591,7 +665,7 @@ public class AlbumTunesController {
 				// need to handle file not found exception in new thread
 				tableView.setItems(musicHandler.getMainPlaylist().getSongsInPlaylist());
 				playlistTable.setItems(musicHandler.getPlaylists());
-				Platform.runLater(new SelectIdexOnTable(playlistTable, 0));
+				Platform.runLater(new SelectIndexOnTable(playlistTable, 0));
 				tableView.getSelectionModel().selectFirst();
 								
 			}
@@ -610,12 +684,12 @@ public class AlbumTunesController {
 		
 	}
 	
-	private class SelectIdexOnTable implements Runnable{
+	private class SelectIndexOnTable implements Runnable{
 		
 		private TableView<?> table;
 		private int index;
 		
-		public SelectIdexOnTable(TableView<?> table, int index) {
+		public SelectIndexOnTable(TableView<?> table, int index) {
 			this.table = table;
 			this.index = index;					
 		}
@@ -623,7 +697,7 @@ public class AlbumTunesController {
 		@Override
 		public void run() {
 			this.table.requestFocus();
-			this.table.getSelectionModel().selectFirst();
+			this.table.getSelectionModel().clearAndSelect(index);
 			this.table.getFocusModel().focus(index);
 		}
 		
@@ -649,6 +723,10 @@ public class AlbumTunesController {
 
 		@Override
 		public void handle(WindowEvent event) {
+			if(currentPlayer != null){
+				currentPlayer.stop();
+			}
+			
 			Alert alertBox = new Alert(AlertType.NONE);
 			alertBox.setTitle("Saving Content");
 			alertBox.setHeaderText("Hang tight while I save your preferences");
@@ -671,6 +749,40 @@ public class AlbumTunesController {
 			songScrollBar.setValue(scrollBarValue);		
 			currentSongTime.setText(XMLMediaPlayerHelper.convertDecimalMinutesToTimeMinutes(
 					(currentPlayer.getCurrentTime().toMinutes())));
+		}
+		
+	}
+	
+	private class OnScrollBarValueChange implements ChangeListener<Number>{
+
+		@Override
+		public void changed(ObservableValue<? extends Number> observable,
+				Number oldValue, Number newValue) {
+			
+			double ratio = currentPlayer.getCurrentTime().toMinutes()/
+					currentPlayer.getCycleDuration().toMinutes();
+			
+			// make sure the change is not from the AudioSpectrumListener update
+			if(!String.format("%.5f", newValue.doubleValue()).equals(String.format("%.5f", ratio))){
+				
+				// pause media player so it doesn't trigger an
+				// event with the AudioSpectrumListener.. may not be necessary
+				currentPlayer.pause();
+				
+				// get time relative to scroll bar in milliseconds
+				double millis = currentPlayer.getCycleDuration().toMillis() * newValue.doubleValue();
+				
+				// convert to minutes and display above scroll bar
+				String time = XMLMediaPlayerHelper.convertDecimalMinutesToTimeMinutes(millis/60000.0);
+				currentSongTime.setText(time);
+				
+				// seek to the new found song location and play it
+				Duration duration = new Duration(millis);
+				currentPlayer.seek(duration);
+				currentPlayer.play();
+			}
+			
+			
 		}
 		
 	}

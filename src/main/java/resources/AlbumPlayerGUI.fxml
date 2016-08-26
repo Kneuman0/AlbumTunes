@@ -61,7 +61,7 @@
                               <InnerShadow choke="0.4" color="WHITE" />
                            </effect>
                         </Button>
-                        <CheckBox fx:id="shuffleBox" layoutX="14.0" layoutY="26.0" mnemonicParsing="false" text="Shuffle?">
+                        <CheckBox fx:id="shuffleBox" layoutX="14.0" layoutY="26.0" mnemonicParsing="false" onAction="#onShuffleSelected" text="Shuffle?">
                            <effect>
                               <DropShadow color="WHITE" spread="0.85" />
                            </effect>

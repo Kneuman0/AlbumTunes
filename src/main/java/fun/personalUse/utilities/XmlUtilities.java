@@ -155,7 +155,7 @@ public class XmlUtilities {
 		XMLDecoder decoder = new XMLDecoder(fileIn);
 
 		// ObservableLists apparently cannot be encoded so it is converted from
-		// ArrayList to an OnservableArrayList
+		// ArrayList to an ObservableArrayList
 		@SuppressWarnings("unchecked")
 		ArrayList<PlaylistBean> fromXML = (ArrayList<PlaylistBean>) decoder
 				.readObject();
