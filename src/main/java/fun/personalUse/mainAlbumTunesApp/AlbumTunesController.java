@@ -407,6 +407,41 @@ public class AlbumTunesController {
 		}
 	}
 	
+	private void restartPlaySelectedAndShuffle(){
+		songNumber = 0;
+		/*
+		 * Add all indexes of current TableView of songs except the current song
+		 */
+		for(int i = 0; i < songsInAlbum.size(); i++){
+			if(i != startIndex){
+				songIndexes.add(new Integer(i));
+			}
+			
+		}
+		
+		// shuffle all indexes. Better than using Random because there will be no repeats
+		Collections.shuffle(songIndexes);
+		// play selected song
+		songIndexes.add(0, new Integer(startIndex));
+		
+		FileBean selectedSong = metaDataTable.getItems().get(songIndexes.get(0));
+		startNextPlayer(selectedSong);
+	}
+	
+	public void restartDoNotPlaySelectedAndShuffle(){
+		songNumber = 0;
+		// add all indexes
+		for(int i = 0; i < songsInAlbum.size(); i++){
+			songIndexes.add(new Integer(i));					
+		}
+		
+		// shuffle all indexes. Better than using Random because there will be no repeats
+		Collections.shuffle(songIndexes);
+		// Play first song in shuffled indexes
+		FileBean randomSong = metaDataTable.getItems().get(songIndexes.get(0));
+		startNextPlayer(randomSong);
+	}
+	
 	/*
 	 * initiates both the playing or replaying of the album
 	 */
@@ -425,41 +460,14 @@ public class AlbumTunesController {
 			
 			// shuffle all songs in playlist but still play selected song
 			if(playSelectedSong){
-				songNumber = 0;
-				/*
-				 * Add all indexes of current TableView of songs except the current song
-				 */
-				for(int i = 0; i < songsInAlbum.size(); i++){
-					if(i != startIndex){
-						songIndexes.add(new Integer(i));
-					}
-					
-				}
 				
-				// shuffle all indexes. Better than using Random because there will be no repeats
-				Collections.shuffle(songIndexes);
-				// play selected song
-				songIndexes.add(0, new Integer(startIndex));
-				
-				FileBean selectedSong = metaDataTable.getItems().get(songIndexes.get(0));
-				startNextPlayer(selectedSong);
-				
+				restartPlaySelectedAndShuffle();
 			/*
 			 *  if selected song is not to be played, start with the songs at the
 			 *  first shuffled index 
 			 */
 			}else{
-				// add all indexes
-				for(int i = 0; i < songsInAlbum.size(); i++){
-					songIndexes.add(new Integer(i));					
-				}
-				
-				// shuffle all indexes. Better than using Random because there will be no repeats
-				Collections.shuffle(songIndexes);
-				// Play first song in shuffled indexes
-				FileBean randomSong = metaDataTable.getItems().get(songIndexes.get(0));
-				startNextPlayer(randomSong);
-				
+				restartDoNotPlaySelectedAndShuffle();
 			}
 		// Shuffle box not selected	
 		}else{
