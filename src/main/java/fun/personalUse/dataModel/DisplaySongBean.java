@@ -1,12 +1,9 @@
 package fun.personalUse.dataModel;
 
-import java.io.File;
-
 import javafx.beans.property.SimpleStringProperty;
 
 
 public class DisplaySongBean {
-	private File file;
 	
 	// uses string properties to display information in tableview
 	private SimpleStringProperty location;
@@ -22,7 +19,6 @@ public class DisplaySongBean {
 	 * @param fileBean
 	 */
 	public DisplaySongBean(FileBean fileBean){
-		this.file = fileBean.getFile();
 		this.location = new SimpleStringProperty(fileBean.getLocation());
 		this.songName = new SimpleStringProperty(fileBean.getSongName());
 		this.album = new SimpleStringProperty(fileBean.getAlbum());
@@ -32,20 +28,6 @@ public class DisplaySongBean {
 	}
 	
 	
-	/**
-	 * @return the file
-	 */
-	public File getFile() {
-		return file;
-	}
-
-	/**
-	 * @param file the file to set
-	 */
-	public void setFile(File file) {
-		this.file = file;
-	}
-
 	/**
 	 * @return the location
 	 */

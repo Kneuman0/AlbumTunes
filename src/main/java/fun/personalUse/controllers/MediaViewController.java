@@ -49,6 +49,7 @@ public class MediaViewController {
 	
 	public void initialize(){
 		inializeScrollBar();
+		bindMediaView();
 	}
 	
 	public void findNewVideosListener(){
@@ -72,7 +73,6 @@ public class MediaViewController {
 	}
 	
 	public void maximizeButtonListener(){
-		bindMediaView();
 		currentStage.setMaximized(true);
 	}
 	
@@ -88,6 +88,10 @@ public class MediaViewController {
 	
 	public ExitListener getOnExit(){
 		return new ExitListener();
+	}
+	
+	public OnMaximizedPressed getOnMaximizedPressed(){
+		return new OnMaximizedPressed();
 	}
 	
 	/**
@@ -219,10 +223,10 @@ public class MediaViewController {
 		ArrayList<String> extensions = new ArrayList<>();
 		extensions.add("*.MP4");
 		extensions.add("*.mp4");
-		extensions.add(".M4V");
-		extensions.add(".m4v");
-		extensions.add(".M4A");
-		extensions.add(".m4a");
+		extensions.add("*.M4V");
+		extensions.add("*.m4v");
+		extensions.add("*.M4A");
+		extensions.add("*.m4a");
 		return extensions;
 	}
 	
@@ -271,6 +275,17 @@ public class MediaViewController {
 					(currentPlayer.getCurrentTime().toMinutes())));
 		}
 		
+	}
+	
+	private class OnMaximizedPressed implements ChangeListener<Boolean>{
+
+		@Override
+		public void changed(ObservableValue<? extends Boolean> observable,
+				Boolean oldValue, Boolean newValue) {
+			currentStage.setMaximized(newValue);
+		}
+
+				
 	}
 }
 	

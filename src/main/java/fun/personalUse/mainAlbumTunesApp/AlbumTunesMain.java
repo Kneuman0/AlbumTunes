@@ -22,6 +22,7 @@ public class AlbumTunesMain extends Application{
 			}
 			
 			AlbumTunesController controller = (AlbumTunesController)loader.getController();
+			controller.setCurrentStage(stage);
 			
 			Scene scene = new Scene(parent);
 

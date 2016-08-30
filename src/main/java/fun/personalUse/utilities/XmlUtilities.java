@@ -274,9 +274,10 @@ public class XmlUtilities {
 			// Set Track duration
 			fileBean.setDuration(Double.parseDouble(
 					XMLMediaPlayerHelper.convertDecimalMinutesToTimeMinutes(duration)));
-
-//			fileBean.setMedia(null);
-//			fileBean.setPlayer(null);
+			
+			fileBean.getPlayer().dispose();
+			fileBean.setMedia(null);
+			fileBean.setPlayer(null);
 
 		}
 

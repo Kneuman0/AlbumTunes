@@ -16,7 +16,6 @@ import javafx.scene.media.MediaPlayer;
  *
  */
 public class FileBean implements Comparator<FileBean>, Comparable<FileBean>{
-	private File file;
 	private SimpleStringProperty location;
 	private SimpleStringProperty songName;
 	private SimpleStringProperty  album;
@@ -33,7 +32,6 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>{
 	 */
 	public FileBean(){
 		media = null;
-		file = null;
 		location = new SimpleStringProperty();
 		songName = new SimpleStringProperty();
 		album = new SimpleStringProperty();
@@ -69,7 +67,6 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>{
 		 *  null pointer exception to be thrown if not initialized
 		 */
 		duration = new SimpleStringProperty("0.0");
-		this.file = file;
 		location.set(file.getAbsolutePath().replace("\\", "/"));
 		
 		/*
@@ -215,21 +212,6 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>{
 	 */
 	public void setUrl(String url) {
 		this.url.set(url);
-	}
-
-
-	/**
-	 * @return the file
-	 */
-	public File getFile() {
-		return file;
-	}
-
-	/**
-	 * @param file the file to set
-	 */
-	public void setFile(File file) {
-		this.file = file;
 	}
 
 	/**

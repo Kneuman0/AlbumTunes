@@ -30,7 +30,7 @@
                         </TableView>
                         <Button fx:id="addSongsToPlaylistButton" layoutX="137.0" layoutY="160.0" mnemonicParsing="false" onAction="#addSongsToPlaylistButtonListener" text="Add Songs To Playlist" />
                         <Label layoutX="11.0" layoutY="98.0" prefHeight="53.0" prefWidth="228.0" text="*First highlight the playlist you want to add to, then highlight the songs you want to move, then click this button to move them" textFill="#f50303" wrapText="true" />
-                        <Label fx:id="mediaDescLeft" alignment="CENTER_RIGHT" layoutX="12.0" layoutY="34.0" prefHeight="62.0" prefWidth="372.0">
+                        <Label fx:id="mediaDescLeft" alignment="CENTER_RIGHT" layoutX="12.0" layoutY="49.0" prefHeight="42.0" prefWidth="372.0">
                            <font>
                               <Font size="14.0" />
                            </font>
@@ -38,7 +38,7 @@
                               <DropShadow color="WHITE" spread="0.85" />
                            </effect>
                         </Label>
-                        <Label layoutX="249.0" text="Media Player 5000">
+                        <Label layoutX="249.0" layoutY="3.0" text="Media Player 5000">
                            <font>
                               <Font name="Broadway" size="29.0" />
                            </font>
@@ -59,12 +59,12 @@
                               <DropShadow color="WHITE" spread="0.85" />
                            </effect>
                         </CheckBox>
-                        <Button fx:id="restartAlbumButton" layoutX="306.0" layoutY="106.0" mnemonicParsing="false" onAction="#restartAlbumButtonListener" text="Restart Album" textFill="#1500ff">
+                        <Button fx:id="restartAlbumButton" alignment="CENTER" layoutX="306.0" layoutY="106.0" mnemonicParsing="false" onAction="#restartAlbumButtonListener" text="Restart" textFill="#1500ff">
                            <effect>
                               <InnerShadow choke="0.8" color="#fffefe" />
                            </effect>
                         </Button>
-                        <Button fx:id="playBackButton" layoutX="623.0" layoutY="106.0" mnemonicParsing="false" onAction="#executePlayback" prefHeight="17.0" prefWidth="61.0" text="Play" textFill="#00b21b">
+                        <Button fx:id="playBackButton" layoutX="625.0" layoutY="106.0" mnemonicParsing="false" onAction="#executePlayback" prefHeight="17.0" prefWidth="61.0" text="Play" textFill="#00b21b">
                            <effect>
                               <InnerShadow choke="0.4" color="WHITE" />
                            </effect>
@@ -89,7 +89,7 @@
                               <InnerShadow choke="0.4" color="#fffefe" />
                            </effect>
                         </Button>
-                        <Label fx:id="mediaDescRight" layoutX="404.0" layoutY="31.0" prefHeight="66.0" prefWidth="361.0">
+                        <Label fx:id="mediaDescRight" layoutX="404.0" layoutY="48.0" prefHeight="44.0" prefWidth="361.0">
                            <font>
                               <Font size="14.0" />
                            </font>
@@ -97,6 +97,20 @@
                               <DropShadow color="#f8f6f6" spread="0.85" />
                            </effect>
                         </Label>
+                        <MenuBar>
+                          <menus>
+                            <Menu mnemonicParsing="false" text="File">
+                              <items>
+                                <MenuItem mnemonicParsing="false" onAction="#closeMenuListener" text="Close" />
+                              </items>
+                            </Menu>
+                            <Menu mnemonicParsing="false" text="Edit">
+                                 <items>
+                                    <MenuItem mnemonicParsing="false" onAction="#preferencesMenuListener" text="Preferences" />
+                                 </items>
+                            </Menu>
+                          </menus>
+                        </MenuBar>
                      </children>
                   </AnchorPane>
             </content>

@@ -109,16 +109,16 @@ public class AlbumTunesController {
     private ScrollBar songScrollBar;
      
 
-	MediaPlayer currentPlayer;
-	List<FileBean> songsInAlbum;
-	ArrayList<Integer> songIndexes;
+	private MediaPlayer currentPlayer;
+	private List<FileBean> songsInAlbum;
+	private ArrayList<Integer> songIndexes;
 	
 	/*
 	 * is incremented each time a song is played
 	 */
 	private int songNumber;
-	XMLMediaPlayerHelper musicHandler;
-	DecimalFormat time;
+	private XMLMediaPlayerHelper musicHandler;
+	private Stage currentStage;
 
 	public void initialize() {
 		setBackgroundImage();
@@ -137,10 +137,7 @@ public class AlbumTunesController {
 		// Highligts the first index in the song tableview
 		Platform.runLater(new SelectIndexOnTable(metaDataTable, 0));
 		
-		initalizeScrollBar();
-		
-		time = new DecimalFormat(".00");
-		
+		initalizeScrollBar();		
 	}
 	
 	public void executePlayback(){
@@ -167,7 +164,11 @@ public class AlbumTunesController {
 	}
 
 	public void nextSongButtonListener() {
-		currentPlayer.stop();
+		if(currentPlayer != null){
+			currentPlayer.stop();
+			currentPlayer.dispose();
+		}
+		
 	}
 	
 	public void backButtonListener(){
@@ -178,6 +179,7 @@ public class AlbumTunesController {
 				&& songNumber >= 2){
 			songNumber -= 2;
 			currentPlayer.stop();
+			currentPlayer.dispose();
 		}else{
 			// do nothing because player has not been started
 			return;
@@ -211,6 +213,7 @@ public class AlbumTunesController {
 			PlaylistBean playlist = playlistTable.getSelectionModel().getSelectedItem();
 			metaDataTable.setItems(playlist.getSongsInPlaylist());
 			musicHandler.setCurrentPlaylist(playlist.getSongsInPlaylist());
+			digLabel.setText("Songs: " + playlist.getSongsInPlaylist().size());
 		}
 	}
 	
@@ -230,10 +233,12 @@ public class AlbumTunesController {
 		String search = searchBox.getText();
 		if(search.equals("")){
 			metaDataTable.setItems(musicHandler.getCurrentPlaylist());
+			digLabel.setText("Songs: " + musicHandler.getCurrentPlaylist().size());
 		}else{
-			metaDataTable.setItems(
-					musicHandler.getsubListFromSearchResult(
-							search, metaDataTable.getItems()));
+			ObservableList<FileBean> subList = musicHandler.getsubListFromSearchResult(
+					search, metaDataTable.getItems());
+			metaDataTable.setItems(subList);
+			digLabel.setText("Songs: " + subList.size());
 		}
 	}
 	
@@ -302,12 +307,21 @@ public class AlbumTunesController {
 		controller.setParentController(this);
 		controller.setCurrentStage(stage);
 		stage.setOnCloseRequest(controller.getOnExit());
+		stage.maximizedProperty().addListener(controller.getOnMaximizedPressed());
 		Scene scene = new Scene(parent);
-
+		
 		// window title
-		stage.setTitle("Album Player");
+		stage.setTitle("Video Player");
 		stage.setScene(scene);
 		stage.show();
+	}
+	
+	public void closeMenuListener(){
+		exitApplication();
+	}
+	
+	public void preferencesMenuListener(){
+		
 	}
 	
 	
@@ -339,6 +353,22 @@ public class AlbumTunesController {
 		startAlbum(metaDataTable.getSelectionModel().getSelectedIndex(), false);
 	}
 	
+	
+	
+	/**
+	 * @return the currentStage
+	 */
+	public Stage getCurrentStage() {
+		return currentStage;
+	}
+
+	/**
+	 * @param currentStage the currentStage to set
+	 */
+	public void setCurrentStage(Stage currentStage) {
+		this.currentStage = currentStage;
+	}
+
 	/**
 	 * The method will display an Alert box prompting the user to locate a 
 	 * song or directory that contains mp3s
@@ -411,6 +441,7 @@ public class AlbumTunesController {
 			playASong(selectedSong);
 		}else{
 			currentPlayer.stop();
+			currentPlayer.dispose();
 		}
 	}
 	
@@ -513,6 +544,9 @@ public class AlbumTunesController {
 	private CurrentSongBean playASong(FileBean songFile) {
 		
 		Media song = new Media(String.format("file:///%s", songFile.getUrl()));
+		if(currentPlayer != null){
+			currentPlayer.dispose();
+		}
 		currentPlayer = new MediaPlayer(song);
 		
 		EndOfMediaEventHandler endOfMediaHandler = new EndOfMediaEventHandler();
@@ -572,6 +606,18 @@ public class AlbumTunesController {
 	
 	protected SaveEverything saveChanges(){
 		return new SaveEverything();
+	}
+	
+	private void exitApplication(){
+		if(currentPlayer != null){
+			currentPlayer.stop();
+			currentPlayer.dispose();
+		}
+		
+		// close the window
+		getCurrentStage().close();
+		// save the xml in the background
+		Platform.runLater(new ExitApplication());		
 	}
 	
 	private class OnMediaReadyEvent implements Runnable{
@@ -636,11 +682,9 @@ public class AlbumTunesController {
 		@Override
 		public void run() {
 			Platform.runLater(new UpdateLabel(digLabel, "loading..."));
-//			XMLMediaPlayerHelper musicHandler = new XMLMediaPlayerHelper(
-//					"C:/Users/Karottop/git/AlbumTunes/SimplePlayer/infoDirectory/playlists.xml");
+			
 			try {
 				musicHandler.findNewSongs(path);
-				
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -668,7 +712,7 @@ public class AlbumTunesController {
 				musicHandler.loadAllPlaylists();
 				tableView.setItems(musicHandler.getMainPlaylist().getSongsInPlaylist());
 				playlistTable.setItems(musicHandler.getPlaylists());
-
+				digLabel.setText("Complete: " + musicHandler.getCurrentPlaylist().size());
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (NoPlaylistsFoundException e) {
@@ -741,18 +785,8 @@ public class AlbumTunesController {
 
 		@Override
 		public void handle(WindowEvent event) {
-			if(currentPlayer != null){
-				currentPlayer.stop();
-			}
-			
-			Alert alertBox = new Alert(AlertType.NONE);
-			alertBox.setTitle("Saving Content");
-			alertBox.setHeaderText("Hang tight while I save your preferences");
-			alertBox.setContentText("Saving...");
-			alertBox.show();
-			musicHandler.exportPlaylistsToXML();
 			event.consume();
-			Platform.exit();
+			exitApplication();
 		}
 		
 	}
@@ -801,6 +835,16 @@ public class AlbumTunesController {
 			}
 			
 			
+		}
+		
+	}
+	
+	private class ExitApplication implements Runnable{
+
+		@Override
+		public void run() {
+			musicHandler.exportPlaylistsToXML();
+			Platform.exit();
 		}
 		
 	}

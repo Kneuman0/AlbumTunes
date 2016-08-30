@@ -24,7 +24,7 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 	private ObservableList<PlaylistBean> playlists;
 	private File file;
 	private String xmlDirectory;
-	private ObservableList<FileBean> currentPlaylist ;
+	private ObservableList<FileBean> currentPlaylist;
 	
 	/**
 	 * Should be the default constructor used. This constructor will
@@ -102,7 +102,7 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 		}
 		
 		/**
-		 * Always sets the current playlist to to the main playlist
+		 * Always sets the current playlist to to the main playlist upon loading
 		 */
 		currentPlaylist = getMainPlaylist().getSongsInPlaylist();
 		
@@ -324,6 +324,21 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 		int fullMinutes = (int)minutes;
 		int secondsRemainder = (int)((minutes - fullMinutes) * 60);
 		return String.format("%d.%s", fullMinutes, time.format(secondsRemainder));
+	}
+	
+	public ObservableList<FileBean> getDeepCopyOfPlaylist(ObservableList<FileBean> playlist){
+		ObservableList<FileBean> temp = FXCollections.observableArrayList();
+		for(FileBean song : playlist){
+			FileBean bean = new FileBean();
+			bean.setAlbum(song.getAlbum());
+			bean.setArtist(song.getArtist());
+			bean.setDuration(song.getDuration());
+			bean.setLocation(song.getLocation());
+			bean.setSongName(song.getSongName());
+			bean.setUrl(song.getUrl());
+			temp.add(bean);
+		}
+		return temp;
 	}
 	
 	
