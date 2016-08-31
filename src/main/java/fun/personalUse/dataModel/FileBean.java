@@ -286,7 +286,6 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>{
 		temp.setAlbum(this.getAlbum());
 		temp.setArtist(this.getArtist());
 		temp.setDuration(this.getDuration());
-//		temp.setFile(this.getFile());
 		temp.setLocation(this.getLocation());
 		temp.setMedia(this.getMedia());
 		temp.setPlayer(player);

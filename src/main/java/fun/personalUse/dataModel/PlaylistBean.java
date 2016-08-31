@@ -12,7 +12,7 @@ import javafx.collections.ObservableList;
  *
  */
 public class PlaylistBean implements Comparator<PlaylistBean>, Comparable<PlaylistBean>{
-	/** 
+	/*
 	 * user defined playlists are int values of 1, and the main
 	 * playlist has an int value of 0;
 	 * 

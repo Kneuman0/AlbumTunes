@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,7 +12,6 @@ import java.util.Optional;
 
 import fun.personalUse.controllers.MediaViewController;
 import fun.personalUse.customExceptions.NoPlaylistsFoundException;
-import fun.personalUse.dataModel.CurrentSongBean;
 import fun.personalUse.dataModel.FileBean;
 import fun.personalUse.dataModel.PlaylistBean;
 import fun.personalUse.utilities.XMLMediaPlayerHelper;
@@ -541,7 +539,7 @@ public class AlbumTunesController {
 	 * @param songFile
 	 * @return
 	 */
-	private CurrentSongBean playASong(FileBean songFile) {
+	private void playASong(FileBean songFile) {
 		
 		Media song = new Media(String.format("file:///%s", songFile.getUrl()));
 		if(currentPlayer != null){
@@ -561,11 +559,6 @@ public class AlbumTunesController {
 		 * once the status is switched to READY
 		 */
 		currentPlayer.setOnReady(new OnMediaReadyEvent(songFile));
-
-		CurrentSongBean currentSong = new CurrentSongBean(currentPlayer
-				.getTotalDuration().toMillis(), currentPlayer);
-		
-		return currentSong;
 	}
 
 	private void setBackgroundImage() {
