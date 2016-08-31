@@ -1,4 +1,4 @@
-package fun.personalUse.mainAlbumTunesApp;
+package fun.personalUse.customExceptions;
 
 @SuppressWarnings("serial")
 public class InvalidUserInputException extends RuntimeException{
