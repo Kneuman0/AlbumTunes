@@ -579,10 +579,10 @@ public class AlbumTunesController {
 		ArrayList<String> extensions = new ArrayList<>();
 		extensions.add("*.MP4");
 		extensions.add("*.mp4");
-		extensions.add(".M4V");
-		extensions.add(".m4v");
-		extensions.add(".M4A");
-		extensions.add(".m4a");
+		extensions.add("*.M4V");
+		extensions.add("*.m4v");
+		extensions.add("*.M4A");
+		extensions.add("*.m4a");
 		extensions.add("*.mp3");
 		extensions.add("*.MP3");
 		return extensions;
