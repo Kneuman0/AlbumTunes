@@ -440,6 +440,7 @@ public class AlbumTunesController {
 		}else{
 			currentPlayer.stop();
 			currentPlayer.dispose();
+			playASong(selectedSong);
 		}
 	}
 	
