@@ -1,7 +1,12 @@
 package fun.personalUse.mainAlbumTunesApp;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Map;
 
+import fun.personalUse.utilities.IdeaTester;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -32,7 +37,9 @@ public class AlbumTunesMain extends Application{
 			stage.show();
 			
 			scene.getWindow().setOnCloseRequest(controller.saveChanges());
+			
 		}
+	
 
 		/**
 		 * creates application in memory
