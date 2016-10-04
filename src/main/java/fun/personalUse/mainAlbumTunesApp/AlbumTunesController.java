@@ -186,8 +186,13 @@ public class AlbumTunesController {
 	
 	public void restartAlbumButtonListener(){
 		// restarts the album from the first index
+		Platform.runLater(new SelectIndexOnTable(metaDataTable, 0));
+		
+		// play new song even if paused. If paused, change to label
+		if(playBackButton.getText().equals("Play")){
+			playBackButton.setText("Pause");
+		}
 		startAlbum(0, true);
-		songNumber = 0;
 	}
 		
 	public void addPlaylistButtonListener(){
@@ -483,7 +488,12 @@ public class AlbumTunesController {
 	 * initiates both the playing or replaying of the album
 	 */
 	private void startAlbum(int startIndex, boolean playSelectedSong){
-						
+		if(currentPlayer != null){
+			currentPlayer.stop();
+			currentPlayer.dispose();
+			currentPlayer = null;
+		}
+		
 		if (shuffleBox.isSelected()) {
 			Platform.runLater(new UpdateLabel(mediaDescLeft, "Shuffling..."));
 			Platform.runLater(new UpdateLabel(mediaDescRight, "Shuffling..."));
