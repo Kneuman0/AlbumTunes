@@ -164,6 +164,7 @@ public class AlbumTunesController {
 	public void nextSongButtonListener() {
 		if(currentPlayer != null){
 			currentPlayer.stop();
+			Platform.runLater(new EndOfMediaEventHandler());
 			currentPlayer.dispose();
 		}
 		
@@ -177,7 +178,7 @@ public class AlbumTunesController {
 				&& songNumber >= 2){
 			songNumber -= 2;
 			currentPlayer.stop();
-			currentPlayer.dispose();
+			Platform.runLater(new EndOfMediaEventHandler());
 		}else{
 			// do nothing because player has not been started
 			return;
@@ -186,12 +187,16 @@ public class AlbumTunesController {
 	
 	public void restartAlbumButtonListener(){
 		// restarts the album from the first index
-		Platform.runLater(new SelectIndexOnTable(metaDataTable, 0));
+//		Platform.runLater(new SelectIndexOnTable(metaDataTable, 0));
+		metaDataTable.requestFocus();
+		metaDataTable.getSelectionModel().clearAndSelect(0);
+		metaDataTable.getSelectionModel().focus(0);
 		
 		// play new song even if paused. If paused, change to label
 		if(playBackButton.getText().equals("Play")){
 			playBackButton.setText("Pause");
 		}
+		songNumber = 0;
 		startAlbum(0, true);
 	}
 		
@@ -444,7 +449,6 @@ public class AlbumTunesController {
 			playASong(selectedSong);
 		}else{
 			currentPlayer.stop();
-			currentPlayer.dispose();
 			playASong(selectedSong);
 		}
 	}
@@ -490,8 +494,6 @@ public class AlbumTunesController {
 	private void startAlbum(int startIndex, boolean playSelectedSong){
 		if(currentPlayer != null){
 			currentPlayer.stop();
-			currentPlayer.dispose();
-			currentPlayer = null;
 		}
 		
 		if (shuffleBox.isSelected()) {
@@ -558,9 +560,8 @@ public class AlbumTunesController {
 		}
 		currentPlayer = new MediaPlayer(song);
 		
-		EndOfMediaEventHandler endOfMediaHandler = new EndOfMediaEventHandler();
-		currentPlayer.setOnEndOfMedia(endOfMediaHandler);
-		currentPlayer.setOnStopped(endOfMediaHandler);
+		currentPlayer.setOnEndOfMedia(new EndOfMediaEventHandler());
+		currentPlayer.setOnStopped(new OnMediaStopped(currentPlayer));
 		currentPlayer.setAudioSpectrumInterval(1.0);
 		currentPlayer.setAudioSpectrumListener(new OnMediaProgressUpdate());
 		
@@ -615,7 +616,6 @@ public class AlbumTunesController {
 	private void exitApplication(){
 		if(currentPlayer != null){
 			currentPlayer.stop();
-			currentPlayer.dispose();
 		}
 		
 		// close the window
@@ -675,6 +675,24 @@ public class AlbumTunesController {
 
 		}
 
+	}
+	
+	private class OnMediaStopped implements Runnable{
+		
+		private MediaPlayer player;
+		
+		public OnMediaStopped(MediaPlayer player) {
+			this.player = player;
+		}
+		
+		@Override
+		public void run() {
+			if(player != null){
+				this.player.dispose();
+			}
+			
+		}
+		
 	}
 	
 	public class DigSongs implements Runnable{
