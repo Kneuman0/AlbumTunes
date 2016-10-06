@@ -832,6 +832,9 @@ public class AlbumTunesController {
 		@Override
 		public void changed(ObservableValue<? extends Number> observable,
 				Number oldValue, Number newValue) {
+			if(currentPlayer == null){
+				return; // currentPlayer has not been initalized, do nothing
+			}
 			
 			double ratio = currentPlayer.getCurrentTime().toMinutes()/
 					currentPlayer.getCycleDuration().toMinutes();
