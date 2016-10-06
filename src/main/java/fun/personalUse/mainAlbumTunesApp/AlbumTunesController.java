@@ -553,7 +553,7 @@ public class AlbumTunesController {
 	 * @return
 	 */
 	private void playASong(FileBean songFile) {
-		
+		System.out.println("Playing a song");
 		Media song = new Media(String.format("file:///%s", songFile.getUrl()));
 		if(currentPlayer != null){
 			currentPlayer.dispose();
@@ -853,7 +853,12 @@ public class AlbumTunesController {
 				// seek to the new found song location and play it
 				Duration duration = new Duration(millis);
 				currentPlayer.seek(duration);
-				currentPlayer.play();
+				if(playBackButton.getText().equals("Pause")){ // if playback button reads "Pause" a song is 
+					currentPlayer.play();					  // supposed to be playing so resume playing
+				}	        								  // otherwise leave it paused
+					
+				
+					
 			}
 			
 			
