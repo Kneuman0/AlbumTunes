@@ -171,6 +171,10 @@ public class AlbumTunesController {
 	}
 	
 	public void backButtonListener(){
+		if (currentPlayer == null){
+			return;
+		}
+		
 		System.out.println("|" + currentSongTime.getText() + "|");
 		if(!currentSongTime.getText().equals("0.00")){
 			songScrollBar.setValue(0.0);
@@ -644,6 +648,14 @@ public class AlbumTunesController {
 			Platform.runLater(new UpdateLabel(mediaDescRight, tempDescRight));
 			Platform.runLater(new SelectIndexOnTable(metaDataTable, metaDataTable.getItems().indexOf(songFile)));
 			currentPlayer.play();
+			
+			/*
+			 * if the playback button reads "Play," the player is paused. re-pause the player for the next song
+			 */
+			if(playBackButton.getText().equals("Play")){
+				currentPlayer.pause();
+			}
+			
 			// increments index variable 'songNumber' each time playASong() is called
 			songNumber++;
 		}
