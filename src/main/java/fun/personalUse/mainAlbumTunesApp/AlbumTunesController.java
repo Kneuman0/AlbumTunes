@@ -165,7 +165,6 @@ public class AlbumTunesController {
 		if(currentPlayer != null){
 			currentPlayer.stop();
 			Platform.runLater(new EndOfMediaEventHandler());
-			currentPlayer.dispose();
 		}
 		
 	}
@@ -535,7 +534,7 @@ public class AlbumTunesController {
 			 *  get a sublist to iterate through sequentially from the place of selection through
 			 *  the end of the playlist
 			 */
-			songsInAlbum = metaDataTable.getItems().subList(startIndex, metaDataTable.getItems().size());
+			songsInAlbum = metaDataTable.getItems();
 			
 			if(playSelectedSong){
 				// start with selected song
@@ -666,7 +665,7 @@ public class AlbumTunesController {
 
 		@Override
 		public void run() {
-			
+			System.out.printf("Song number: %d\nSongs in Album: %d", songNumber, songsInAlbum.size());
 			// if shuffle is on
 			if(shuffleBox.isSelected() && songNumber < songsInAlbum.size()){
 				
