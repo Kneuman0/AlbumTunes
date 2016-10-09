@@ -73,14 +73,14 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>{
 		 * encode all special characters.
 		 * URLEncoder puts a '+' where a ' ' is so change all '+' to encoded space '%20'.
 		 */
-		url.set(URLEncoder.encode(location.get(), "UTF-8").replace("+", "%20"));
+		url.set("file:///" + URLEncoder.encode(location.get(), "UTF-8").replace("+", "%20"));
 		
 		/*
 		 * Could not easily figure out how to set an action event for when the Media
 		 * object is done loading. Using the MediaPlayer status change event instead.
 		 * Looking for a better option
 		 */
-		media = new Media("file:///" + url.get());
+		media = new Media(url.get());
 //		media.getMetadata().addListener(new SetMetaData());
 		this.player = new MediaPlayer(media);
 //		tempPlayer.setOnReady(new OnMediaReadyEvent());

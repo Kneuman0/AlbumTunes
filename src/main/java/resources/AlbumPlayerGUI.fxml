@@ -69,7 +69,7 @@
                               <InnerShadow choke="0.4" color="WHITE" />
                            </effect>
                         </Button>
-                        <TextField fx:id="searchBox" layoutX="409.0" layoutY="160.0" onAction="#onPlaylistSearch" text="Search" />
+                        <TextField fx:id="searchBox" layoutX="409.0" layoutY="160.0" onAction="#onPlaylistSearch" promptText="Search" />
                         <Button fx:id="mineMP3sButton" layoutX="576.0" layoutY="160.0" mnemonicParsing="false" onAction="#mineMP3sButtonListener" text="Mine for mp3s" />
                         <Label fx:id="digLabel" layoutX="677.0" layoutY="160.0" prefHeight="25.0" prefWidth="118.0" wrapText="true">
                            <effect>

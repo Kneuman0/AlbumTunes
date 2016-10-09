@@ -22,6 +22,7 @@ import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -38,9 +39,11 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
@@ -48,6 +51,7 @@ import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.GridPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.DirectoryChooser;
@@ -135,7 +139,7 @@ public class AlbumTunesController {
 		// Highligts the first index in the song tableview
 		Platform.runLater(new SelectIndexOnTable(metaDataTable, 0));
 		
-		initalizeScrollBar();		
+		initalizeScrollBar();	
 	}
 	
 	public void executePlayback(){
@@ -226,14 +230,81 @@ public class AlbumTunesController {
 			musicHandler.setCurrentPlaylist(playlist.getSongsInPlaylist());
 			digLabel.setText("Songs: " + playlist.getSongsInPlaylist().size());
 		}
+		
+		// allow user to change the name of the playlist
+		if(event.getButton() == MouseButton.SECONDARY){
+			 PlaylistBean playlist = playlistTable.getSelectionModel().getSelectedItem();
+			 TextInputDialog newPlaylistName = new TextInputDialog("Re-name Playlist");
+			 newPlaylistName.setHeaderText(null);
+			 newPlaylistName.setTitle("Re-name playlist");
+			 newPlaylistName.setContentText("Please enter a new name for your playlist");
+			 Optional<String> result = newPlaylistName.showAndWait();
+			 if(result.isPresent()){
+				 playlist.setName(result.get());
+			 }
+		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void playSelectedSong(MouseEvent event){
 		 if (event.getClickCount() == 2) {
 			 playBackButton.setText("Pause");
 			 startAlbum(metaDataTable.getSelectionModel().getSelectedIndex(), true);
 	            
 	        }
+		 
+		 /*
+		  * If the user right clicks on a song, prompt them with
+		  * the option to change the song metadata.
+		  */
+		 if(event.getButton() == MouseButton.SECONDARY){
+			 // make sure the event's source is the TableView
+			 TableView<FileBean> table = null;
+			 if(event.getSource() instanceof TableView<?>){
+				 table = (TableView<FileBean>)event.getSource();
+			 }
+			 
+			 FileBean song = table.getSelectionModel().getSelectedItem();
+			 Alert changeSongMetaData = new Alert(AlertType.CONFIRMATION);
+			 changeSongMetaData.setHeaderText("Change song metadata");
+			 changeSongMetaData.setTitle("Change Song Metadata");
+			 changeSongMetaData.setContentText(null);
+			 
+			 // create custom text fields for song metadata
+			 GridPane grid = new GridPane();
+			 grid.setHgap(10);
+			 grid.setVgap(10);
+			 grid.setPadding(new Insets(20, 150, 10, 10));
+
+			 TextField songName = new TextField();
+			 songName.setText(song.getSongName());
+			 songName.setPrefWidth(300);
+			 TextField artist = new TextField();
+			 artist.setText(song.getArtist());
+			 TextField album = new TextField();
+			 album.setText(song.getAlbum());
+
+			 grid.add(new Label("Song Name:"), 0, 0);
+			 grid.add(songName, 1, 0);
+			 grid.add(new Label("Artist:"), 0, 1);
+			 grid.add(artist, 1, 1);
+			 grid.add(new Label("Album:"), 0, 2);
+			 grid.add(album, 1, 2);
+			 
+			 // add text fields to Alert boc
+			 changeSongMetaData.getDialogPane().setContent(grid);
+			 
+			 // if user presses OK, record their changes, otherwise do nothing
+			 Optional<ButtonType> result = changeSongMetaData.showAndWait();
+			 if(result.isPresent()){
+				 if(result.get() == ButtonType.OK){
+					 song.setSongName(songName.getText());
+					 song.setArtist(artist.getText());
+					 song.setAlbum(album.getText());
+				 }
+			 }
+			 
+		 }
 	}
 	
 	public void onTableSort(){
@@ -243,12 +314,18 @@ public class AlbumTunesController {
 	public void onPlaylistSearch(){
 		String search = searchBox.getText();
 		if(search.equals("")){
-			metaDataTable.setItems(musicHandler.getCurrentPlaylist());
+			String playlistName = playlistTable.getSelectionModel().getSelectedItem().getName();
+			ObservableList<FileBean> currentPlaylist = musicHandler.
+					getPlaylistByName(playlistName).getSongsInPlaylist();
+			
+			metaDataTable.setItems(currentPlaylist);
+			musicHandler.setCurrentPlaylist(currentPlaylist);
 			digLabel.setText("Songs: " + musicHandler.getCurrentPlaylist().size());
 		}else{
 			ObservableList<FileBean> subList = musicHandler.getsubListFromSearchResult(
 					search, metaDataTable.getItems());
 			metaDataTable.setItems(subList);
+			musicHandler.setCurrentPlaylist(subList);
 			digLabel.setText("Songs: " + subList.size());
 		}
 	}
@@ -265,11 +342,26 @@ public class AlbumTunesController {
 	public void onDeleteSong(KeyEvent event){
 		if(event.getCode().equals(KeyCode.DELETE)
 				|| event.getCode().equals(KeyCode.BACK_SPACE)){
-			ObservableList<Integer> songIndicesToDelete = 
-					metaDataTable.getSelectionModel().getSelectedIndices();
+			ObservableList<FileBean> songsToDelete = 
+					metaDataTable.getSelectionModel().getSelectedItems();
 			
-			for(Integer index : songIndicesToDelete){
-				System.out.println(musicHandler.getCurrentPlaylist().remove(index.intValue()));
+			for(FileBean song : songsToDelete){
+				// remove song from playlist
+				FileBean deletedSong = musicHandler.getCurrentPlaylist()
+						.remove(musicHandler.getCurrentPlaylist().indexOf(song));
+				
+				// remove song from 
+
+				// if one of the deleted songs was playing, iterate to the next song
+				if(currentPlayer != null){
+					String currentSongURL = currentPlayer.getMedia().getSource();
+					System.out.printf("currentSongURL:%s\n%s\n", currentSongURL, deletedSong.getUrl());
+					if(currentSongURL.equals("file:///" + deletedSong.getUrl())){
+						currentPlayer.stop();
+						Platform.runLater(new EndOfMediaEventHandler());
+					}
+				}
+				
 			}
 			
 		}
@@ -278,6 +370,18 @@ public class AlbumTunesController {
 	public void onDeletePlaylist(KeyEvent event){
 		if(event.getCode().equals(KeyCode.DELETE)
 				|| event.getCode().equals(KeyCode.BACK_SPACE)){
+			/**
+			 * If user tried to delete the main playlist, tell them they are not allowed
+			 */
+			if(playlistTable.getSelectionModel().getSelectedItem().getPLAYLIST_TYPE() == 0){
+				Alert cannotDeleteMainPlaylist = new Alert(AlertType.ERROR);
+				cannotDeleteMainPlaylist.setHeaderText(null);
+				cannotDeleteMainPlaylist.setContentText("You cannot delete the Main Playlist");
+				cannotDeleteMainPlaylist.showAndWait();
+				return;
+			}
+			
+			// Make sure user really wants to deleted the selected playlist
 			Alert deleteOK = new Alert(AlertType.CONFIRMATION);
 			deleteOK.setHeaderText(null);
 			deleteOK.setContentText("Are you sure you want to delete this playlist?");
@@ -351,12 +455,14 @@ public class AlbumTunesController {
 		durationCol.setCellValueFactory(new PropertyValueFactory<FileBean, String>("duration"));
 		playlistColumn.setCellValueFactory(new PropertyValueFactory<PlaylistBean, String>("playlistName"));
 		
+		
 		// does not halt program during startup
 		Platform.runLater(new LoadAllMusicFiles(metaDataTable));
 		
 		
 		// need to make similar methods for playlist loading
-		
+		playlistColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+		playlistColumn.setEditable(true);
 		metaDataTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 	}
 	
@@ -531,8 +637,7 @@ public class AlbumTunesController {
 			this.songNumber = startIndex;
 			
 			/*
-			 *  get a sublist to iterate through sequentially from the place of selection through
-			 *  the end of the playlist
+			 *  Get all songs visible to the user
 			 */
 			songsInAlbum = metaDataTable.getItems();
 			
@@ -665,7 +770,6 @@ public class AlbumTunesController {
 
 		@Override
 		public void run() {
-			System.out.printf("Song number: %d\nSongs in Album: %d", songNumber, songsInAlbum.size());
 			// if shuffle is on
 			if(shuffleBox.isSelected() && songNumber < songsInAlbum.size()){
 				
@@ -744,6 +848,7 @@ public class AlbumTunesController {
 			try {
 				musicHandler.loadAllPlaylists();
 				tableView.setItems(musicHandler.getMainPlaylist().getSongsInPlaylist());
+				musicHandler.getMainPlaylist().getSongsInPlaylist().addListener(musicHandler.getOnMainPlaylistChangedListener());
 				playlistTable.setItems(musicHandler.getPlaylists());
 				digLabel.setText("Complete: " + musicHandler.getCurrentPlaylist().size());
 			} catch (FileNotFoundException e) {

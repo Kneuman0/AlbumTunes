@@ -6,11 +6,13 @@ import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 
 import biz.personalAcademics.lib.pathClasses.PathGetter;
+import fun.personalUse.customExceptions.InvalidUserInputException;
 import fun.personalUse.customExceptions.NoPlaylistsFoundException;
 import fun.personalUse.dataModel.FileBean;
 import fun.personalUse.dataModel.PlaylistBean;
 import fun.personalUse.dataModel.PlaylistBeanMain;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 /**
@@ -225,6 +227,28 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 	}
 	
 	/**
+	 * Returns the first playlist in the list of playlist that matches the name passed in
+	 * 
+	 * If no playlist matches the name, InvalidUserInputException is thrown
+	 * @param name
+	 * @return
+	 * @throws InvalidUserInputException
+	 */
+	public PlaylistBean getPlaylistByName(String name) throws InvalidUserInputException{
+		PlaylistBean list = null;
+		for(PlaylistBean playlist : playlists){
+			if(playlist.getName().equals(name)){
+				list = playlist;
+				break;
+			}else{
+				throw new InvalidUserInputException("No playlist found by that name");
+			}
+		}
+		
+		return list;
+	}
+	
+	/**
 	 * Adds a new PlaylistBean to the playlist ObservableList with the specifed name
 	 * @param name
 	 */
@@ -315,7 +339,7 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 		main.setSongsInPlaylist(observableSongs);
 		playlists.add(main);
 		setCurrentPlaylist(main.getSongsInPlaylist());
-		
+		main.getSongsInPlaylist().addListener(new OnMainPlaylistChanged());
 		return main;
 	}
 	
@@ -339,6 +363,48 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 			temp.add(bean);
 		}
 		return temp;
+	}
+	
+	public OnMainPlaylistChanged getOnMainPlaylistChangedListener(){
+		return new OnMainPlaylistChanged();
+	}
+	
+	/**
+	 * Listener for the main playlist. This listener will listen for songs being removed
+	 * If a song is removed from the main playlist, the same song will be removed from 
+	 * all other playlists as well.
+	 * @author Karottop
+	 *
+	 */
+	private class OnMainPlaylistChanged implements ListChangeListener<FileBean>{
+
+		@Override
+		public void onChanged(
+				javafx.collections.ListChangeListener.Change<? extends FileBean> c) {
+			while(c.next()){
+				int i = 0;
+				for(PlaylistBean playlist : playlists){
+					
+					// only look in user defined playlists (PLAYLIST_TYPE = 1)
+					if(playlist.getPLAYLIST_TYPE() == 1){
+						ObservableList<FileBean> temp = playlist.getSongsInPlaylist();
+						// remove the song deleted from the main playlist from all others
+						try{
+							temp.remove(temp.indexOf(c.getRemoved().get(i)));
+						}catch(ArrayIndexOutOfBoundsException e){
+							if(Integer.parseInt(e.getMessage()) == -1){
+								System.out.println("No song Found in: " + playlist.getName());
+							}
+						}
+						
+					}
+				}
+				i++;
+			}
+			
+			
+		}
+		
 	}
 	
 	
