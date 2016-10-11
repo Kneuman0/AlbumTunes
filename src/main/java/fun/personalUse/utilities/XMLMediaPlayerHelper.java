@@ -126,7 +126,7 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 		// add new songs to existing main playlist
 		digSongs(main.getSongsInPlaylist(), file);
 		
-//		deleteIncapatableMediaTypes(main.getSongsInPlaylist());
+//		removeDuplicates(main.getSongsInPlaylist());
 		
 		return main;
 	}
@@ -365,6 +365,21 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 		return temp;
 	}
 	
+	public ObservableList<FileBean> removeDuplicates(ObservableList<FileBean> playlist){
+		for(int i = 0; i < playlist.size(); i++){
+			FileBean temp = playlist.remove(i);
+			int duplicateIndex = playlist.indexOf(temp);
+			
+			while(duplicateIndex != -1){
+				playlist.remove(duplicateIndex);
+				duplicateIndex = playlist.indexOf(temp);
+			}
+			playlist.add(i, temp);
+		}
+		
+		return playlist;
+	}
+	
 	public OnMainPlaylistChanged getOnMainPlaylistChangedListener(){
 		return new OnMainPlaylistChanged();
 	}
@@ -382,15 +397,26 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 		public void onChanged(
 				javafx.collections.ListChangeListener.Change<? extends FileBean> c) {
 			while(c.next()){
+				
+				if(!c.wasRemoved()){
+					System.out.println("Not removed type");
+					continue;
+				}
+				
 				int i = 0;
 				for(PlaylistBean playlist : playlists){
+					
+					// if the change was from anything other than removal, do nothing
+					FileBean removed = c.getRemoved().get(i);
+					System.out.println(removed);
+					
 					
 					// only look in user defined playlists (PLAYLIST_TYPE = 1)
 					if(playlist.getPLAYLIST_TYPE() == 1){
 						ObservableList<FileBean> temp = playlist.getSongsInPlaylist();
 						// remove the song deleted from the main playlist from all others
 						try{
-							temp.remove(temp.indexOf(c.getRemoved().get(i)));
+							temp.remove(temp.indexOf(removed));
 						}catch(ArrayIndexOutOfBoundsException e){
 							if(Integer.parseInt(e.getMessage()) == -1){
 								System.out.println("No song Found in: " + playlist.getName());

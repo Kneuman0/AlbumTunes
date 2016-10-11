@@ -11,13 +11,17 @@ import java.util.List;
 import java.util.Optional;
 
 import fun.personalUse.controllers.MediaViewController;
+import fun.personalUse.controllers.PreferencesController;
 import fun.personalUse.customExceptions.NoPlaylistsFoundException;
 import fun.personalUse.dataModel.FileBean;
 import fun.personalUse.dataModel.PlaylistBean;
+import fun.personalUse.dataModel.PreferencesBean;
 import fun.personalUse.utilities.XMLMediaPlayerHelper;
+import fun.personalUse.utilities.XmlUtilities;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -121,15 +125,20 @@ public class AlbumTunesController {
 	private int songNumber;
 	private XMLMediaPlayerHelper musicHandler;
 	private Stage currentStage;
+	
+	private PreferencesBean defaultPrefs;
 
 	public void initialize() {
-		setBackgroundImage();
+		// this will eventually try the info directory first, then read the default as a backup
+		readInDefaultPreferencesBean();
+		
+		setBackgroundImage(defaultPrefs.getBackgroundImageLoc());
 		// index used to keep track of next song
 		songNumber = 0;
 		
 		// loads all the playlist and songs from the XML file and 
 		// displays them in TableView objects
-		initalizeTableView();
+		initalizeTableView(defaultPrefs.getDefaultParentInfoDirectory());
 		songsInAlbum = metaDataTable.getItems();
 		songIndexes = new ArrayList<>();
 		
@@ -342,13 +351,16 @@ public class AlbumTunesController {
 	public void onDeleteSong(KeyEvent event){
 		if(event.getCode().equals(KeyCode.DELETE)
 				|| event.getCode().equals(KeyCode.BACK_SPACE)){
-			ObservableList<FileBean> songsToDelete = 
-					metaDataTable.getSelectionModel().getSelectedItems();
+			
+			ObservableList<FileBean> songsToDelete = FXCollections.observableArrayList(
+					metaDataTable.getSelectionModel().getSelectedItems());
+			Collections.reverse(songsToDelete);
 			
 			for(FileBean song : songsToDelete){
 				// remove song from playlist
+				int index = musicHandler.getCurrentPlaylist().indexOf(song);
 				FileBean deletedSong = musicHandler.getCurrentPlaylist()
-						.remove(musicHandler.getCurrentPlaylist().indexOf(song));
+						.remove(index);
 				
 				// remove song from 
 
@@ -436,7 +448,36 @@ public class AlbumTunesController {
 	}
 	
 	public void preferencesMenuListener(){
+		Stage stage = new Stage();
+		FXMLLoader loader = null;
+		Parent parent = null;
+		try {
+			loader = new FXMLLoader(getClass().getResource("/resources/preferencesGUI.fxml"));
+			parent = (Parent)loader.load();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
+		// controller for the application you are about to launch
+		PreferencesController controller = (PreferencesController)loader.getController();
+		
+		/*
+		 *  Pass in a reference to the controller that launched it (it's parent), hence 'this'.
+		 *  
+		 *  Once you have that stored, you can change values in this controller using the 
+		 *  other controller, or you can change values in the other controller using this one.
+		 *  You have complete freedom.
+		 */
+		controller.setParentController(this);
+		controller.setCurrentStage(stage);
+		stage.setOnCloseRequest(controller.getOnExit());
+		Scene scene = new Scene(parent);
+		
+		// window title
+		stage.setTitle("Preferences");
+		stage.setScene(scene);
+		stage.show();
 	}
 	
 	
@@ -447,8 +488,8 @@ public class AlbumTunesController {
 	 * If no xml's are found, the user will be prompted to locate a directory containing mp3s
 	 * so that the program can search for them.
 	 */
-	private void initalizeTableView(){
-		musicHandler = new XMLMediaPlayerHelper();
+	private void initalizeTableView(String locationOfPlaylists){
+		musicHandler = new XMLMediaPlayerHelper(locationOfPlaylists);
 		songNameCol.setCellValueFactory(new PropertyValueFactory<FileBean, String>("songName"));
 		albumCol.setCellValueFactory(new PropertyValueFactory<FileBean, String>("album"));
 		artistCol.setCellValueFactory(new PropertyValueFactory<FileBean, String>("artist"));
@@ -681,10 +722,10 @@ public class AlbumTunesController {
 		currentPlayer.setOnReady(new OnMediaReadyEvent(songFile));
 	}
 
-	private void setBackgroundImage() {
+	private void setBackgroundImage(String location) {
 		Image logo = new Image(
 				AlbumTunesController.class
-						.getResourceAsStream("/resources/MusicBackground.jpg"));
+						.getResourceAsStream(location));
 		BackgroundSize logoSize = new BackgroundSize(600, 400, false, false,
 				true, true);
 		BackgroundImage image = new BackgroundImage(logo,
@@ -693,6 +734,10 @@ public class AlbumTunesController {
 		Background background = new Background(image);
 		AlbumPlayerAnchorPane.setBackground(background);
 		MediaPlayerAnchorPane.setBackground(background);
+	}
+	
+	private void readInDefaultPreferencesBean(){
+		defaultPrefs = XmlUtilities.readInPreferencesBean(getClass().getResourceAsStream("/resources/prefs.xml"));
 	}
 	
 	private ArrayList<String> getSupportedFileTypes(){

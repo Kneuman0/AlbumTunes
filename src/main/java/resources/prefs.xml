@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="1.8.0_60" class="java.beans.XMLDecoder">
+ <object class="fun.personalUse.dataModel.PreferencesBean">
+  <void property="backgroundImageLoc">
+   <string>/resources/MusicBackground.jpg</string>
+  </void>
+  <void property="defaultPrefsBeanLoc">
+   <string>/resources/prefs.xml</string>
+  </void>
+  <void property="infoDirectoryLocation">
+   <string>C:\Users\Karottop\git\AlbumTunes\Media_Player_5000\infoDirectory</string>
+  </void>
+ </object>
+</java>
+

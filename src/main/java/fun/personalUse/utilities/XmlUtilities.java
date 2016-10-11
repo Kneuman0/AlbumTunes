@@ -9,12 +9,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import fun.personalUse.dataModel.FileBean;
 import fun.personalUse.dataModel.PlaylistBean;
+import fun.personalUse.dataModel.PreferencesBean;
 
 /**
  * class that handles importing exporting of objects to XML files.
@@ -208,6 +211,74 @@ public class XmlUtilities {
 		}
 
 		return tempPlaylists;
+	}
+	
+	public static PreferencesBean readInPreferencesBean(String location){
+		FileInputStream xmlFile = null;
+		try {
+			xmlFile = new FileInputStream(location);
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		return readInPreferencesBean(xmlFile);
+	}
+	
+	public static PreferencesBean readInPreferencesBean(InputStream stream){
+		
+		PreferencesBean prefs = null;
+		
+//		FileInputStream xmlFile = null;
+//		try {
+//			xmlFile = new FileInputStream(location);
+//		} catch (FileNotFoundException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+		BufferedInputStream fileIn = new BufferedInputStream(stream);
+		XMLDecoder decoder = new XMLDecoder(fileIn);
+		
+		prefs = (PreferencesBean) decoder.readObject();
+		
+		decoder.close();
+		try {
+			fileIn.close();
+//			xmlFile.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return prefs;
+		
+	}
+	
+	public void exportPrefs(PreferencesBean prefs, String exportLocation){
+		FileWriter file = null;
+		PrintWriter fileOut = null;
+		try {
+
+			file = new FileWriter(exportLocation + "/prefs.xml");
+			fileOut = new PrintWriter(file);
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		ByteArrayOutputStream songList = new ByteArrayOutputStream();
+		XMLEncoder write = new XMLEncoder(songList);
+		write.writeObject(prefs);
+		write.close();
+		fileOut.println(songList.toString());
+
+		try {
+			fileOut.close();
+			file.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**

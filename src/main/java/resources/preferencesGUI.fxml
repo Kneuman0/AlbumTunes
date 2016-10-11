@@ -6,8 +6,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fun.personalUse.controllers.PreferencesController">
    <effect>
       <InnerShadow choke="0.21" color="#9a0202" height="121.81" radius="60.405" width="121.81" />
    </effect>
@@ -20,19 +19,30 @@
             <Font name="Broadway" size="20.0" />
          </font>
       </Label>
-      <TabPane layoutX="15.0" layoutY="38.0" prefHeight="68.0" prefWidth="570.0" tabClosingPolicy="UNAVAILABLE">
+      <TabPane layoutX="15.0" layoutY="38.0" prefHeight="68.0" prefWidth="575.0" style="-fx-border-color: white;" tabClosingPolicy="UNAVAILABLE">
         <tabs>
           <Tab text="Data Storage Directory">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <Label fx:id="dataStoreagePathLabel" layoutX="3.0" layoutY="1.0" prefHeight="37.0" prefWidth="497.0" wrapText="true" />
                         <Button fx:id="dataStoreageChangeButton" layoutX="509.0" layoutY="6.0" mnemonicParsing="false" text="Change" />
+                        <TextField fx:id="storageDirectoryTextField" layoutX="3.0" layoutY="7.0" prefHeight="25.0" prefWidth="496.0" promptText="Copy and paste storage directory here or click change --&gt;" />
                      </children>
                   </AnchorPane>
             </content>
           </Tab>
+            <Tab text="Background Image Location">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Button fx:id="imageLocChangeButton" layoutX="511.0" layoutY="7.0" mnemonicParsing="false" text="Change" />
+                        <TextField fx:id="imageLocTextField" layoutX="7.0" layoutY="7.0" prefHeight="25.0" prefWidth="494.0" promptText="Copy and paste image location here or click change --&gt;" />
+                     </children>
+                  </AnchorPane>
+              </content>
+            </Tab>
         </tabs>
       </TabPane>
+      <Button fx:id="backupPlaylistDataButton" layoutX="15.0" layoutY="119.0" mnemonicParsing="false" text="Backup Playlist Data" />
    </children>
 </AnchorPane>
