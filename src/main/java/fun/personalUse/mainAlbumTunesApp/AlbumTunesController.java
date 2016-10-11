@@ -722,7 +722,7 @@ public class AlbumTunesController {
 		currentPlayer.setOnReady(new OnMediaReadyEvent(songFile));
 	}
 
-	private void setBackgroundImage(String location) {
+	public void setBackgroundImage(String location) {
 		Image logo = new Image(
 				AlbumTunesController.class
 						.getResourceAsStream(location));

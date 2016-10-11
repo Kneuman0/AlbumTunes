@@ -6,7 +6,6 @@ import fun.personalUse.utilities.XmlUtilities;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -42,7 +41,8 @@ public class PreferencesController {
     }
     
     public void imageLocChangeButtonListener(){
-    	
+    	// you will need to change this
+    	parentController.setBackgroundImage(imageLocChangeButton.getText());
     }
     
     public void backupPlaylistButtonListener(){
@@ -52,11 +52,7 @@ public class PreferencesController {
     private PreferencesBean readInDefaultPrefBean(){
     	return XmlUtilities.readInPreferencesBean(getClass().getResourceAsStream("/resources/prefs.xml"));
     }
-    
-    private void writeDefaultPrefsBean(){
-    	
-    }
-    
+        
     public void setParentController(AlbumTunesController controller){
     	parentController = controller;
     }
