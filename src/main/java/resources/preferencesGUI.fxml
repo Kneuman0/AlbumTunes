@@ -44,5 +44,6 @@
         </tabs>
       </TabPane>
       <Button fx:id="backupPlaylistDataButton" layoutX="15.0" layoutY="119.0" mnemonicParsing="false" text="Backup Playlist Data" />
+      <Button fx:id="resetDefualtsButton" layoutX="15.0" layoutY="153.0" mnemonicParsing="false" text="Reset Preferences to Default" />
    </children>
 </AnchorPane>

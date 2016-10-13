@@ -23,7 +23,8 @@ public class PreferencesController {
     private Button 
     	dataStoreageChangeButton,
     	imageLocChangeButton,
-    	backupPlaylistDataButton;
+    	backupPlaylistDataButton,
+    	resetDefualtsButton;
     
     private PreferencesBean defaultPrefBean;
     

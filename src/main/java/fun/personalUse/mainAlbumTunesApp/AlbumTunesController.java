@@ -702,8 +702,7 @@ public class AlbumTunesController {
 	 * @return
 	 */
 	private void playASong(FileBean songFile) {
-		System.out.println("Playing a song");
-		Media song = new Media(String.format("file:///%s", songFile.getUrl()));
+		Media song = new Media(songFile.getUrl());
 		if(currentPlayer != null){
 			currentPlayer.dispose();
 		}
