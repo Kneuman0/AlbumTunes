@@ -4,7 +4,7 @@ import java.io.File;
 
 import biz.personalAcademics.lib.pathClasses.PathGetter;
 
-public class PreferencesBean {
+public class PreferencesBean implements DefaultPrefsBean{
 	
 	private String infoDirectoryLocation;
 	private String backgroundImageLoc;
@@ -51,13 +51,6 @@ public class PreferencesBean {
 	}
 
 	/**
-	 * @param defaultPrefsBeanLoc the defaultPrefsBeanLoc to set
-	 */
-	public void setDefaultPrefsBeanLoc(String defaultPrefsBeanLoc) {
-		this.defaultPrefsBeanLoc = defaultPrefsBeanLoc;
-	}
-
-	/**
 	 * @return the infoDirectoryLocation
 	 */
 	public String getInfoDirectoryLocation() {
@@ -99,11 +92,26 @@ public class PreferencesBean {
 		this.shuffle = shuffle;
 	}
 	
-	public PreferencesBean getSerializableDefaultPrefsBean(){
+	
+	
+	/**
+	 * @param defaultPrefsBeanLoc the defaultPrefsBeanLoc to set
+	 */
+	public void setDefaultPrefsBeanLoc(String defaultPrefsBeanLoc) {
+		this.defaultPrefsBeanLoc = defaultPrefsBeanLoc;
+	}
+
+	public void resetAllValues(DefaultPrefsBean prefs){
+		this.shuffle = prefs.isShuffle();
+		this.infoDirectoryLocation = prefs.getInfoDirectoryLocation();
+		this.backgroundImageLoc = prefs.getBackgroundImageLoc();
+	}
+	
+	public DefaultPrefsBean getSerializableDefaultPrefsBean(){
 		PreferencesBean temp = new PreferencesBean();
 		temp.setBackgroundImageLoc("/resources/MusicBackground.jpg");
-		temp.setDefaultPrefsBeanLoc("/resources/prefs.xml");
 		temp.setInfoDirectoryLocation(getDefaultParentInfoDirectory());
+		temp.setDefaultPrefsBeanLoc("/resources/prefs.xml");
 		temp.setShuffle(false);
 		return temp;
 		

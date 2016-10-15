@@ -35,15 +35,15 @@
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <Button fx:id="imageLocChangeButton" layoutX="511.0" layoutY="7.0" mnemonicParsing="false" text="Change" />
-                        <TextField fx:id="imageLocTextField" layoutX="7.0" layoutY="7.0" prefHeight="25.0" prefWidth="494.0" promptText="Copy and paste image location here or click change --&gt;" />
+                        <Button fx:id="imageLocChangeButton" layoutX="511.0" layoutY="7.0" mnemonicParsing="false" onAction="#imageLocChangeButtonListener" text="Change" />
+                        <TextField fx:id="imageLocTextField" layoutX="7.0" layoutY="7.0" onAction="#imageLocChangeButtonListener" prefHeight="25.0" prefWidth="494.0" promptText="Copy and paste image location here or click change --&gt;" />
                      </children>
                   </AnchorPane>
               </content>
             </Tab>
         </tabs>
       </TabPane>
-      <Button fx:id="backupPlaylistDataButton" layoutX="15.0" layoutY="119.0" mnemonicParsing="false" text="Backup Playlist Data" />
-      <Button fx:id="resetDefualtsButton" layoutX="15.0" layoutY="153.0" mnemonicParsing="false" text="Reset Preferences to Default" />
+      <Button fx:id="backupPlaylistDataButton" layoutX="15.0" layoutY="119.0" mnemonicParsing="false" onAction="#backupPlaylistButtonListener" text="Backup Playlist Data" />
+      <Button fx:id="resetDefualtsButton" layoutX="15.0" layoutY="153.0" mnemonicParsing="false" onAction="#returnToDefaultSettings" text="Reset Preferences to Default" />
    </children>
 </AnchorPane>

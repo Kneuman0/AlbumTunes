@@ -211,7 +211,7 @@ public class FileBean implements Comparator<FileBean>, Comparable<FileBean>{
 	 * @param url the url to set
 	 */
 	public void setUrl(String url) {
-		this.url.set(url);
+		this.url.set(url);		
 	}
 
 	/**

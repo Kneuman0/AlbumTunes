@@ -1,9 +1,10 @@
 package fun.personalUse.mainAlbumTunesApp;
 
-
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +14,7 @@ import java.util.Optional;
 import fun.personalUse.controllers.MediaViewController;
 import fun.personalUse.controllers.PreferencesController;
 import fun.personalUse.customExceptions.NoPlaylistsFoundException;
+import fun.personalUse.dataModel.DefaultPrefsBean;
 import fun.personalUse.dataModel.FileBean;
 import fun.personalUse.dataModel.PlaylistBean;
 import fun.personalUse.dataModel.PreferencesBean;
@@ -126,19 +128,21 @@ public class AlbumTunesController {
 	private XMLMediaPlayerHelper musicHandler;
 	private Stage currentStage;
 	
-	private PreferencesBean defaultPrefs;
+	private DefaultPrefsBean defaultPrefs;
+	
+	private PreferencesBean prefs;
 
 	public void initialize() {
 		// this will eventually try the info directory first, then read the default as a backup
-		readInDefaultPreferencesBean();
+		loadPreferences();
 		
-		setBackgroundImage(defaultPrefs.getBackgroundImageLoc());
+		
 		// index used to keep track of next song
 		songNumber = 0;
 		
 		// loads all the playlist and songs from the XML file and 
 		// displays them in TableView objects
-		initalizeTableView(defaultPrefs.getDefaultParentInfoDirectory());
+		initalizeTableView(prefs.getDefaultParentInfoDirectory());
 		songsInAlbum = metaDataTable.getItems();
 		songIndexes = new ArrayList<>();
 		
@@ -471,6 +475,7 @@ public class AlbumTunesController {
 		 */
 		controller.setParentController(this);
 		controller.setCurrentStage(stage);
+		controller.setMusicHandler(this.musicHandler);
 		stage.setOnCloseRequest(controller.getOnExit());
 		Scene scene = new Scene(parent);
 		
@@ -525,6 +530,10 @@ public class AlbumTunesController {
 	 */
 	public void setCurrentStage(Stage currentStage) {
 		this.currentStage = currentStage;
+	}
+	
+	public XMLMediaPlayerHelper getMusicHandler(){
+		return this.musicHandler;
 	}
 
 	/**
@@ -634,7 +643,14 @@ public class AlbumTunesController {
 		// shuffle all indexes. Better than using Random because there will be no repeats
 		Collections.shuffle(songIndexes);
 		// Play first song in shuffled indexes
-		FileBean randomSong = metaDataTable.getItems().get(songIndexes.get(0));
+		FileBean randomSong;
+		try {
+			randomSong = metaDataTable.getItems().get(songIndexes.get(0));
+		} catch (IndexOutOfBoundsException e) {
+			mediaDescLeft.setText("No Songs");
+			mediaDescRight.setText("No Songs");
+			return;
+		}
 		startNextPlayer(randomSong);
 	}
 	
@@ -720,11 +736,9 @@ public class AlbumTunesController {
 		 */
 		currentPlayer.setOnReady(new OnMediaReadyEvent(songFile));
 	}
-
-	public void setBackgroundImage(String location) {
-		Image logo = new Image(
-				AlbumTunesController.class
-						.getResourceAsStream(location));
+	
+	public void setBackgroundImage(InputStream stream){
+		Image logo = new Image(stream);
 		BackgroundSize logoSize = new BackgroundSize(600, 400, false, false,
 				true, true);
 		BackgroundImage image = new BackgroundImage(logo,
@@ -735,9 +749,51 @@ public class AlbumTunesController {
 		MediaPlayerAnchorPane.setBackground(background);
 	}
 	
-	private void readInDefaultPreferencesBean(){
-		defaultPrefs = XmlUtilities.readInPreferencesBean(getClass().getResourceAsStream("/resources/prefs.xml"));
+	public void setBackgroundImage(String location) throws FileNotFoundException {
+		InputStream stream = new FileInputStream(location);
+		setBackgroundImage(stream);
 	}
+	
+	private void loadPreferences(){
+		defaultPrefs = XmlUtilities.readInPreferencesBean(getClass().
+				getResourceAsStream("/resources/prefs.xml"));
+		try{
+			// try to load user defined preferences
+			prefs = XmlUtilities.readInPreferencesBean(defaultPrefs.getDefaultParentInfoDirectory() + "/prefs.xml");
+			// if loaded, set shuffle box
+			shuffleBox.setSelected(prefs.isShuffle());
+
+			// if background image location is same as default, load as stream
+			if(prefs.getBackgroundImageLoc().equals(defaultPrefs.getBackgroundImageLoc())){
+				setBackgroundImage(this.getClass().getResourceAsStream(			
+				defaultPrefs.getBackgroundImageLoc()));
+				
+			// if default is different, try to set as different image
+			}else{
+				try {
+					setBackgroundImage(prefs.getBackgroundImageLoc());
+				} catch (NullPointerException error) {
+					setBackgroundImage(this.getClass().getResourceAsStream(			
+							defaultPrefs.getBackgroundImageLoc()));
+				}
+			}
+			
+			
+			// if user defined prefs have not been found, set user defined prefs as default
+		}catch(FileNotFoundException e){
+			prefs = new PreferencesBean();
+			prefs.resetAllValues(defaultPrefs);
+			resetPrefsToDefault();
+		}
+	}
+	
+	public void resetPrefsToDefault(){
+		setBackgroundImage(this.getClass().getResourceAsStream(
+				defaultPrefs.getBackgroundImageLoc()));
+		shuffleBox.setSelected(defaultPrefs.isShuffle());
+		prefs.resetAllValues(defaultPrefs);
+	}
+	
 	
 	private ArrayList<String> getSupportedFileTypes(){
 		ArrayList<String> extensions = new ArrayList<>();
@@ -757,6 +813,10 @@ public class AlbumTunesController {
 		songScrollBar.setMin(0.0);
 		songScrollBar.setValue(0.0);
 		songScrollBar.valueProperty().addListener(new OnScrollBarValueChange());
+	}
+	
+	public PreferencesBean getPrefs(){
+		return prefs;
 	}
 	
 
@@ -1033,7 +1093,9 @@ public class AlbumTunesController {
 
 		@Override
 		public void run() {
+			prefs.setShuffle(shuffleBox.isSelected());
 			musicHandler.exportPlaylistsToXML();
+			musicHandler.exportPrefs(prefs, prefs.getInfoDirectoryLocation());
 			Platform.exit();
 		}
 		

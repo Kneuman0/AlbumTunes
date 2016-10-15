@@ -213,14 +213,8 @@ public class XmlUtilities {
 		return tempPlaylists;
 	}
 	
-	public static PreferencesBean readInPreferencesBean(String location){
-		FileInputStream xmlFile = null;
-		try {
-			xmlFile = new FileInputStream(location);
-		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+	public static PreferencesBean readInPreferencesBean(String location) throws FileNotFoundException{
+		FileInputStream xmlFile = new FileInputStream(location);
 		return readInPreferencesBean(xmlFile);
 	}
 	
@@ -253,12 +247,12 @@ public class XmlUtilities {
 		
 	}
 	
-	public void exportPrefs(PreferencesBean prefs, String exportLocation){
+	public void exportPrefs(PreferencesBean prefs, String exportDirectory){
 		FileWriter file = null;
 		PrintWriter fileOut = null;
 		try {
 
-			file = new FileWriter(exportLocation + "/prefs.xml");
+			file = new FileWriter(exportDirectory + "/prefs.xml");
 			fileOut = new PrintWriter(file);
 
 		} catch (IOException e) {
