@@ -247,13 +247,40 @@ public class AlbumTunesController {
 		// allow user to change the name of the playlist
 		if(event.getButton() == MouseButton.SECONDARY){
 			 PlaylistBean playlist = playlistTable.getSelectionModel().getSelectedItem();
-			 TextInputDialog newPlaylistName = new TextInputDialog("Re-name Playlist");
-			 newPlaylistName.setHeaderText(null);
-			 newPlaylistName.setTitle("Re-name playlist");
-			 newPlaylistName.setContentText("Please enter a new name for your playlist");
-			 Optional<String> result = newPlaylistName.showAndWait();
+//			 TextInputDialog newPlaylistName = new TextInputDialog("Re-name Playlist");
+//			 newPlaylistName.setHeaderText(null);
+//			 newPlaylistName.setTitle("Re-name playlist");
+//			 newPlaylistName.setContentText("Please enter a new name for your playlist");
+//			 Optional<String> result = newPlaylistName.showAndWait();
+//			 if(result.isPresent()){
+//				 playlist.setName(result.get());
+//			 }
+			 
+			 Alert changeSongMetaData = new Alert(AlertType.CONFIRMATION);
+			 changeSongMetaData.setHeaderText("Please enter a new name for your playlist");
+			 changeSongMetaData.setTitle("Change Playlist Name");
+			 changeSongMetaData.setContentText(null);
+			 
+			 // create custom text fields for song metadata
+			 GridPane grid = new GridPane();
+			 grid.setHgap(10);
+			 grid.setVgap(10);
+			 grid.setPadding(new Insets(20, 150, 0, 10));
+
+			 TextField playlistName = new TextField();
+			 playlistName.setText(playlist.getName());
+
+			 grid.add(playlistName, 0, 0);
+			 
+			 // add text fields to Alert boc
+			 changeSongMetaData.getDialogPane().setContent(grid);
+			 
+			 // if user presses OK, record their changes, otherwise do nothing
+			 Optional<ButtonType> result = changeSongMetaData.showAndWait();
 			 if(result.isPresent()){
-				 playlist.setName(result.get());
+				 if(result.get() == ButtonType.OK){
+					 playlist.setName(playlistName.getText());
+				 }
 			 }
 		}
 	}
@@ -298,11 +325,11 @@ public class AlbumTunesController {
 			 album.setText(song.getAlbum());
 
 			 grid.add(new Label("Song Name:"), 0, 0);
-			 grid.add(songName, 1, 0);
-			 grid.add(new Label("Artist:"), 0, 1);
-			 grid.add(artist, 1, 1);
-			 grid.add(new Label("Album:"), 0, 2);
-			 grid.add(album, 1, 2);
+			 grid.add(songName, 0, 1);
+			 grid.add(new Label("Artist:"), 0, 2);
+			 grid.add(artist, 0, 3);
+			 grid.add(new Label("Album:"), 0, 4);
+			 grid.add(album, 0, 5);
 			 
 			 // add text fields to Alert boc
 			 changeSongMetaData.getDialogPane().setContent(grid);
