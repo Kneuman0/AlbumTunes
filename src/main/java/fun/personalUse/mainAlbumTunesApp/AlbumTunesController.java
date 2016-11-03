@@ -586,48 +586,59 @@ public class AlbumTunesController {
 	 * @param content
 	 */
 	private void findNewSongs(String title, String header, String content){
-		Alert importType = new Alert(AlertType.CONFIRMATION);
-		importType.setTitle(title);
-		importType.setHeaderText(header);
-		importType.setContentText(content);
+//		Alert importType = new Alert(AlertType.CONFIRMATION);
+//		importType.setTitle(title);
+//		importType.setHeaderText(header);
+//		importType.setContentText(content);
+//		
+//		ButtonType singleMp3 = new ButtonType("Single mp3");
+//		ButtonType folderOfmp3s = new ButtonType("Folder Of mp3s");
+//		ButtonType cancel = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+//		importType.getButtonTypes().setAll(singleMp3, folderOfmp3s, cancel);
+//		
+//		Optional<ButtonType> result = importType.showAndWait();
+//		if(result.get() == singleMp3){
+//			FileChooser fileChooser = new FileChooser();
+//			fileChooser.setTitle("Location of mp3s");
+//			ArrayList<String> extensions = new ArrayList<>();
+//			extensions.add("*.mp3");
+//			fileChooser.getExtensionFilters().add(
+//					new ExtensionFilter("Audio Files", getSupportedFileTypes()));
+//			
+//			File selectedFile = fileChooser.showOpenDialog(playBackButton.getScene().getWindow());
+//			
+//			if(selectedFile == null){
+//				return;
+//			}
+//			Thread findSongs = new Thread(new DigSongs(selectedFile.getAbsolutePath()));
+//			findSongs.start();
+//			
+//		}else if(result.get() == folderOfmp3s){
+//			DirectoryChooser fileChooser = new DirectoryChooser();
+//			fileChooser.setTitle("Location to mine for mp3s");
+//			
+//			File selectedFile = fileChooser.showDialog(playBackButton.getScene().getWindow());
+//			
+//			if(selectedFile == null){
+//				return;
+//			}
+//			Thread findSongs = new Thread(new DigSongs(selectedFile.getAbsolutePath()));
+//			findSongs.start();
+//			
+//		}else{
+//			return;
+//		}
 		
-		ButtonType singleMp3 = new ButtonType("Single mp3");
-		ButtonType folderOfmp3s = new ButtonType("Folder Of mp3s");
-		ButtonType cancel = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
-		importType.getButtonTypes().setAll(singleMp3, folderOfmp3s, cancel);
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Location of mp3s");
+		ArrayList<String> extensions = new ArrayList<>();
+		extensions.add("*.mp3");
+		fileChooser.getExtensionFilters().add(
+				new ExtensionFilter("Audio Files", getSupportedFileTypes()));
+		List<File> files = fileChooser.showOpenMultipleDialog(playBackButton.getScene().getWindow());
+		Thread findSongs = new Thread(new DigSongs(files));
+		findSongs.start();
 		
-		Optional<ButtonType> result = importType.showAndWait();
-		if(result.get() == singleMp3){
-			FileChooser fileChooser = new FileChooser();
-			fileChooser.setTitle("Location of mp3s");
-			ArrayList<String> extensions = new ArrayList<>();
-			extensions.add("*.mp3");
-			fileChooser.getExtensionFilters().add(
-					new ExtensionFilter("Audio Files", getSupportedFileTypes()));
-			
-			File selectedFile = fileChooser.showOpenDialog(playBackButton.getScene().getWindow());
-			
-			if(selectedFile == null){
-				return;
-			}
-			Thread findSongs = new Thread(new DigSongs(selectedFile.getAbsolutePath()));
-			findSongs.start();
-			
-		}else if(result.get() == folderOfmp3s){
-			DirectoryChooser fileChooser = new DirectoryChooser();
-			fileChooser.setTitle("Location to mine for mp3s");
-			
-			File selectedFile = fileChooser.showDialog(playBackButton.getScene().getWindow());
-			
-			if(selectedFile == null){
-				return;
-			}
-			Thread findSongs = new Thread(new DigSongs(selectedFile.getAbsolutePath()));
-			findSongs.start();
-			
-		}else{
-			return;
-		}
 	}
 	
 	private void startNextPlayer(FileBean selectedSong){
@@ -942,24 +953,28 @@ public class AlbumTunesController {
 	}
 	
 	public class DigSongs implements Runnable{
-		String path;
+		List<File> files;
 		
-		public DigSongs(String path) {
-			this.path = path;
+		public DigSongs(List<File> files) {
+			this.files = files;
 		}
 		@Override
 		public void run() {
 			Platform.runLater(new UpdateLabel(digLabel, "loading..."));
 			
-			try {
-				musicHandler.findNewSongs(path);
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			for(File file : files){
+				try {
+					musicHandler.findNewSongs(file.getAbsolutePath());
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
+			
+			
 			ObservableList<FileBean> songArray = musicHandler.getMainPlaylist().getSongsInPlaylist();
 			Platform.runLater(new UpdateLabel(digLabel, "complete: " + songArray.size()));
 		}
