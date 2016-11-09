@@ -17,7 +17,10 @@ public class PlaylistBean implements Comparator<PlaylistBean>, Comparable<Playli
 	 * playlist has an int value of 0;
 	 * 
 	 */
-	private int PLAYLIST_TYPE;
+	private PLAYLIST_TYPES PLAYLIST_TYPE;
+	
+	
+	public enum PLAYLIST_TYPES {USER_DEFINED, MAIN}
 		
 	protected ObservableList<FileBean> songsInPlaylist;
 	protected SimpleStringProperty playlistName;
@@ -25,7 +28,7 @@ public class PlaylistBean implements Comparator<PlaylistBean>, Comparable<Playli
 	public PlaylistBean(){
 		playlistName = new SimpleStringProperty("empty");
 		songsInPlaylist = FXCollections.observableArrayList();
-		PLAYLIST_TYPE = 1;
+		PLAYLIST_TYPE = PLAYLIST_TYPES.USER_DEFINED;
 	}
 
 	/**
@@ -82,7 +85,7 @@ public class PlaylistBean implements Comparator<PlaylistBean>, Comparable<Playli
 	/**
 	 * @return the pLAYLIST_TYPE
 	 */
-	public int getPLAYLIST_TYPE() {
+	public PLAYLIST_TYPES getPLAYLIST_TYPE() {
 		return PLAYLIST_TYPE;
 	}
 

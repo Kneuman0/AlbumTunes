@@ -18,6 +18,7 @@ import fun.personalUse.dataModel.DefaultPrefsBean;
 import fun.personalUse.dataModel.FileBean;
 import fun.personalUse.dataModel.PlaylistBean;
 import fun.personalUse.dataModel.PreferencesBean;
+import fun.personalUse.dataModel.PlaylistBean.PLAYLIST_TYPES;
 import fun.personalUse.utilities.XMLMediaPlayerHelper;
 import fun.personalUse.utilities.XmlUtilities;
 import javafx.application.Platform;
@@ -416,7 +417,7 @@ public class AlbumTunesController {
 			/**
 			 * If user tried to delete the main playlist, tell them they are not allowed
 			 */
-			if(playlistTable.getSelectionModel().getSelectedItem().getPLAYLIST_TYPE() == 0){
+			if(playlistTable.getSelectionModel().getSelectedItem().getPLAYLIST_TYPE() == PLAYLIST_TYPES.MAIN){
 				Alert cannotDeleteMainPlaylist = new Alert(AlertType.ERROR);
 				cannotDeleteMainPlaylist.setHeaderText(null);
 				cannotDeleteMainPlaylist.setContentText("You cannot delete the Main Playlist");
@@ -586,59 +587,51 @@ public class AlbumTunesController {
 	 * @param content
 	 */
 	private void findNewSongs(String title, String header, String content){
-//		Alert importType = new Alert(AlertType.CONFIRMATION);
-//		importType.setTitle(title);
-//		importType.setHeaderText(header);
-//		importType.setContentText(content);
-//		
-//		ButtonType singleMp3 = new ButtonType("Single mp3");
-//		ButtonType folderOfmp3s = new ButtonType("Folder Of mp3s");
-//		ButtonType cancel = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
-//		importType.getButtonTypes().setAll(singleMp3, folderOfmp3s, cancel);
-//		
-//		Optional<ButtonType> result = importType.showAndWait();
-//		if(result.get() == singleMp3){
-//			FileChooser fileChooser = new FileChooser();
-//			fileChooser.setTitle("Location of mp3s");
-//			ArrayList<String> extensions = new ArrayList<>();
-//			extensions.add("*.mp3");
-//			fileChooser.getExtensionFilters().add(
-//					new ExtensionFilter("Audio Files", getSupportedFileTypes()));
-//			
-//			File selectedFile = fileChooser.showOpenDialog(playBackButton.getScene().getWindow());
-//			
-//			if(selectedFile == null){
-//				return;
-//			}
-//			Thread findSongs = new Thread(new DigSongs(selectedFile.getAbsolutePath()));
-//			findSongs.start();
-//			
-//		}else if(result.get() == folderOfmp3s){
-//			DirectoryChooser fileChooser = new DirectoryChooser();
-//			fileChooser.setTitle("Location to mine for mp3s");
-//			
-//			File selectedFile = fileChooser.showDialog(playBackButton.getScene().getWindow());
-//			
-//			if(selectedFile == null){
-//				return;
-//			}
-//			Thread findSongs = new Thread(new DigSongs(selectedFile.getAbsolutePath()));
-//			findSongs.start();
-//			
-//		}else{
-//			return;
-//		}
+		Alert importType = new Alert(AlertType.CONFIRMATION);
+		importType.setTitle(title);
+		importType.setHeaderText(header);
+		importType.setContentText(content);
 		
-		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Location of mp3s");
-		ArrayList<String> extensions = new ArrayList<>();
-		extensions.add("*.mp3");
-		fileChooser.getExtensionFilters().add(
-				new ExtensionFilter("Audio Files", getSupportedFileTypes()));
-		List<File> files = fileChooser.showOpenMultipleDialog(playBackButton.getScene().getWindow());
-		Thread findSongs = new Thread(new DigSongs(files));
-		findSongs.start();
+		ButtonType singleMp3 = new ButtonType("Single mp3");
+		ButtonType folderOfmp3s = new ButtonType("Folder Of mp3s");
+		ButtonType cancel = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+		importType.getButtonTypes().setAll(singleMp3, folderOfmp3s, cancel);
 		
+		Optional<ButtonType> result = importType.showAndWait();
+		if(result.get() == singleMp3){
+			FileChooser fileChooser = new FileChooser();
+			fileChooser.setTitle("Location of mp3s");
+			ArrayList<String> extensions = new ArrayList<>();
+			extensions.add("*.mp3");
+			fileChooser.getExtensionFilters().add(
+					new ExtensionFilter("Audio Files", getSupportedFileTypes()));
+			
+			List<File> selectedFile =  fileChooser.showOpenMultipleDialog(playBackButton.getScene().getWindow());
+			
+			if(selectedFile == null){
+				return;
+			}
+			Thread findSongs = new Thread(new DigSongs(selectedFile));
+			findSongs.start();
+			
+		}else if(result.get() == folderOfmp3s){
+			DirectoryChooser fileChooser = new DirectoryChooser();
+			fileChooser.setTitle("Location to mine for mp3s");
+			
+			File selectedFile = fileChooser.showDialog(playBackButton.getScene().getWindow());
+			List<File> dir = new ArrayList<File>();
+			dir.add(selectedFile);
+			
+			if(selectedFile == null){
+				return;
+			}
+			Thread findSongs = new Thread(new DigSongs(dir));
+			findSongs.start();
+			
+		}else{
+			return;
+		}
+				
 	}
 	
 	private void startNextPlayer(FileBean selectedSong){
