@@ -18,7 +18,7 @@ import fun.personalUse.dataModel.DefaultPrefsBean;
 import fun.personalUse.dataModel.FileBean;
 import fun.personalUse.dataModel.PlaylistBean;
 import fun.personalUse.dataModel.PreferencesBean;
-import fun.personalUse.dataModel.PlaylistBean.PLAYLIST_TYPES;
+import fun.personalUse.dataModel.PlaylistBean.PlaylistTypes;
 import fun.personalUse.utilities.XMLMediaPlayerHelper;
 import fun.personalUse.utilities.XmlUtilities;
 import javafx.application.Platform;
@@ -417,7 +417,7 @@ public class AlbumTunesController {
 			/**
 			 * If user tried to delete the main playlist, tell them they are not allowed
 			 */
-			if(playlistTable.getSelectionModel().getSelectedItem().getPLAYLIST_TYPE() == PLAYLIST_TYPES.MAIN){
+			if(playlistTable.getSelectionModel().getSelectedItem().getPLAYLIST_TYPE() == PlaylistTypes.MAIN){
 				Alert cannotDeleteMainPlaylist = new Alert(AlertType.ERROR);
 				cannotDeleteMainPlaylist.setHeaderText(null);
 				cannotDeleteMainPlaylist.setContentText("You cannot delete the Main Playlist");

@@ -9,16 +9,16 @@ package fun.personalUse.dataModel;
  */
 public class PlaylistBeanMain extends PlaylistBean{
 	
-	private PLAYLIST_TYPES PLAYLIST_TYPE;
+	private PlaylistTypes PLAYLIST_TYPE;
 	
 	public PlaylistBeanMain(){
-		PLAYLIST_TYPE = PLAYLIST_TYPES.MAIN;
+		PLAYLIST_TYPE = PlaylistTypes.MAIN;
 	}
 
 	/**
 	 * @return the pLAYLIST_TYPE
 	 */
-	public PLAYLIST_TYPES getPLAYLIST_TYPE() {
+	public PlaylistTypes getPLAYLIST_TYPE() {
 		return PLAYLIST_TYPE;
 	}
 	

@@ -10,7 +10,7 @@ import fun.personalUse.customExceptions.InvalidUserInputException;
 import fun.personalUse.customExceptions.NoPlaylistsFoundException;
 import fun.personalUse.dataModel.FileBean;
 import fun.personalUse.dataModel.PlaylistBean;
-import fun.personalUse.dataModel.PlaylistBean.PLAYLIST_TYPES;
+import fun.personalUse.dataModel.PlaylistBean.PlaylistTypes;
 import fun.personalUse.dataModel.PlaylistBeanMain;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -213,7 +213,7 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 		
 		boolean noMainPlaylist = true;
 		for(PlaylistBean main : playlists){
-			if(main.getPLAYLIST_TYPE() == PLAYLIST_TYPES.MAIN){
+			if(main.getPLAYLIST_TYPE() == PlaylistTypes.MAIN){
 				temp = main;
 				noMainPlaylist = false;
 			}
@@ -414,8 +414,8 @@ public class XMLMediaPlayerHelper extends XmlUtilities {
 					
 					
 					
-					// only look in user defined playlists (PLAYLIST_TYPE = 1)
-					if(playlist.getPLAYLIST_TYPE() == PLAYLIST_TYPES.USER_DEFINED){
+					// only look in user defined playlists 
+					if(playlist.getPLAYLIST_TYPE() == PlaylistTypes.USER_DEFINED){
 						ObservableList<FileBean> temp = playlist.getSongsInPlaylist();
 						
 						// remove the song deleted from the main playlist from all others
