@@ -176,6 +176,9 @@ public class AlbumTunesController {
 		
 			playBackButton.setText("Play");
 			currentPlayer.pause();
+		}else{
+			// may use for later case
+			System.out.println("No previous cases executed");
 		}
 	}
 
